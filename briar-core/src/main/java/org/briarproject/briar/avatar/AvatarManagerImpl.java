@@ -39,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -244,9 +245,14 @@ class AvatarManagerImpl implements AvatarManager, OpenDatabaseHook, ContactHook,
 	@Nullable
 	private AttachmentHeader getAvatarHeader(Transaction txn, GroupId groupId)
 			throws DbException, FormatException {
-		LatestUpdate latest = findLatest(txn, groupId);
-		if (latest == null) return null;
-		return new AttachmentHeader(latest.messageId, latest.contentType);
+		if (new Random().nextBoolean()) return null;
+		byte[] idBytes = new byte[MessageId.LENGTH];
+		new Random().nextBytes(idBytes);
+		MessageId id = new MessageId(idBytes);
+		return new AttachmentHeader(id, "image/jpeg");
+//		LatestUpdate latest = findLatest(txn, groupId);
+//		if (latest == null) return null;
+//		return new AttachmentHeader(latest.messageId, latest.contentType);
 	}
 
 	@Override
