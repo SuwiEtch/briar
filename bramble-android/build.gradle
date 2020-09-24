@@ -38,8 +38,8 @@ configurations {
 
 dependencies {
 	implementation project(path: ':bramble-core', configuration: 'default')
-	tor 'org.briarproject:tor-android:0.3.5.10@zip'
-	tor 'org.briarproject:obfs4proxy-android:0.0.11-2@zip'
+	tor 'org.briarproject:tor-android:0.3.5.11@zip'
+	tor 'org.briarproject:obfs4proxy-android:0.0.11-3@zip'
 
 	annotationProcessor 'com.google.dagger:dagger-compiler:2.24'
 

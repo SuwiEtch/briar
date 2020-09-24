@@ -98,6 +98,8 @@ public class UnixTorPluginFactory implements DuplexPluginFactory {
 			String arch = System.getProperty("os.arch");
 			if (arch.equals("amd64")) {
 				architecture = "linux-x86_64";
+			} else if (arch.equals("aarch64")) {
+				architecture = "linux-aarch64";
 			}
 		}
 		if (architecture == null) {
