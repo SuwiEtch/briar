@@ -916,14 +916,9 @@ abstract class TorPlugin implements DuplexPlugin, EventHandler, EventListener {
 					enableNetwork = true;
 					if (network == PREF_TOR_NETWORK_WITH_BRIDGES ||
 							(automatic && bridgesWork)) {
-						if (circumventionProvider.needsMeek(country)) {
-							LOG.info("Using meek bridges");
-							enableBridges = true;
-							useMeek = true;
-						} else {
-							LOG.info("Using obfs4 bridges");
-							enableBridges = true;
-						}
+						LOG.info("Using meek bridges");
+						enableBridges = true;
+						useMeek = true;
 					} else {
 						LOG.info("Not using bridges");
 					}
