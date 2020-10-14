@@ -863,6 +863,7 @@ abstract class TorPlugin implements DuplexPlugin, EventHandler, EventListener {
 			if (!state.isTorRunning()) return;
 			boolean online = status.isConnected();
 			boolean wifi = status.isWifi();
+			boolean ipv6Only = status.isIpv6Only();
 			String country = locationUtils.getCurrentCountry();
 			boolean blocked =
 					circumventionProvider.isTorProbablyBlocked(country);
@@ -876,10 +877,12 @@ abstract class TorPlugin implements DuplexPlugin, EventHandler, EventListener {
 					settings.getBoolean(PREF_TOR_ONLY_WHEN_CHARGING,
 							DEFAULT_PREF_TOR_ONLY_WHEN_CHARGING);
 			boolean bridgesWork = circumventionProvider.doBridgesWork(country);
-			boolean automatic = network == PREF_TOR_NETWORK_AUTOMATIC;
+			boolean netAuto = network == PREF_TOR_NETWORK_AUTOMATIC;
+			boolean netBridges = network == PREF_TOR_NETWORK_WITH_BRIDGES;
 
 			if (LOG.isLoggable(INFO)) {
-				LOG.info("Online: " + online + ", wifi: " + wifi);
+				LOG.info("Online: " + online + ", wifi: " + wifi
+						+ ", IPv6 only: " + ipv6Only);
 				if (country.isEmpty()) LOG.info("Country code unknown");
 				else LOG.info("Country code: " + country);
 				LOG.info("Charging: " + charging);
@@ -904,7 +907,7 @@ abstract class TorPlugin implements DuplexPlugin, EventHandler, EventListener {
 					LOG.info("Configured not to use mobile data");
 					reasonsDisabled |= REASON_MOBILE_DATA;
 				}
-				if (automatic && blocked && !bridgesWork) {
+				if (netAuto && blocked && !bridgesWork) {
 					LOG.info("Country is blocked");
 					reasonsDisabled |= REASON_COUNTRY_BLOCKED;
 				}
@@ -914,8 +917,11 @@ abstract class TorPlugin implements DuplexPlugin, EventHandler, EventListener {
 				} else {
 					LOG.info("Enabling network");
 					enableNetwork = true;
-					if (network == PREF_TOR_NETWORK_WITH_BRIDGES ||
-							(automatic && bridgesWork)) {
+					if ((netAuto || netBridges) && ipv6Only) {
+						LOG.info("Using meek bridges");
+						enableBridges = true;
+						useMeek = true;
+					} else if (netBridges || (netAuto && bridgesWork)) {
 						if (circumventionProvider.needsMeek(country)) {
 							LOG.info("Using meek bridges");
 							enableBridges = true;
