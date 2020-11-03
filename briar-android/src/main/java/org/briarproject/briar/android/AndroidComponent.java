@@ -21,6 +21,7 @@ import org.briarproject.bramble.api.keyagreement.PayloadEncoder;
 import org.briarproject.bramble.api.keyagreement.PayloadParser;
 import org.briarproject.bramble.api.lifecycle.IoExecutor;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
+import org.briarproject.bramble.api.network.NetworkManager;
 import org.briarproject.bramble.api.plugin.PluginManager;
 import org.briarproject.bramble.api.settings.SettingsManager;
 import org.briarproject.bramble.api.system.AndroidExecutor;
@@ -168,6 +169,8 @@ public interface AndroidComponent
 	FeatureFlags featureFlags();
 
 	AndroidWakeLockManager wakeLockManager();
+
+	NetworkManager networkManager();
 
 	void inject(SignInReminderReceiver briarService);
 

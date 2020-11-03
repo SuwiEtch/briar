@@ -18,6 +18,9 @@ import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.event.EventListener;
+import org.briarproject.bramble.api.network.NetworkManager;
+import org.briarproject.bramble.api.network.NetworkStatus;
+import org.briarproject.bramble.api.network.event.NetworkStatusEvent;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.bramble.api.plugin.BluetoothConstants;
@@ -165,6 +168,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
 	LocationUtils locationUtils;
 	@Inject
 	CircumventionProvider circumventionProvider;
+	@Inject
+	NetworkManager networkManager;
 
 	@Inject
 	AndroidExecutor androidExecutor;
@@ -331,7 +336,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
 		return direction == LAYOUT_DIRECTION_LTR;
 	}
 
-	private void setTorNetworkSummary(int torNetworkSetting) {
+	private void setTorNetworkSummary(int torNetworkSetting,
+			NetworkStatus networkStatus) {
 		if (torNetworkSetting != PREF_TOR_NETWORK_AUTOMATIC) {
 			torNetwork.setSummary("%s");  // use setting value
 			return;
@@ -341,12 +347,13 @@ public class SettingsFragment extends PreferenceFragmentCompat
 		String country = locationUtils.getCurrentCountry();
 		String countryName = getCountryDisplayName(country);
 
+		boolean ipv6Only = networkStatus.isIpv6Only();
 		boolean blocked =
 				circumventionProvider.isTorProbablyBlocked(country);
 		boolean useBridges = circumventionProvider.doBridgesWork(country);
 		String setting =
 				getString(R.string.tor_network_setting_without_bridges);
-		if (blocked && useBridges) {
+		if (ipv6Only || (blocked && useBridges)) {
 			setting = getString(R.string.tor_network_setting_with_bridges);
 		} else if (blocked) {
 			setting = getString(R.string.tor_network_setting_never);
@@ -408,7 +415,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
 			int torNetworkSetting = torSettings.getInt(PREF_TOR_NETWORK,
 					DEFAULT_PREF_TOR_NETWORK);
 			torNetwork.setValue(Integer.toString(torNetworkSetting));
-			setTorNetworkSummary(torNetworkSetting);
+			setTorNetworkSummary(torNetworkSetting,
+					networkManager.getNetworkStatus());
 
 			boolean torMobileSetting = torSettings.getBoolean(PREF_TOR_MOBILE,
 					DEFAULT_PREF_TOR_MOBILE);
@@ -593,7 +601,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
 		} else if (preference == torNetwork) {
 			int torNetworkSetting = Integer.valueOf((String) newValue);
 			storeTorNetworkSetting(torNetworkSetting);
-			setTorNetworkSummary(torNetworkSetting);
+			setTorNetworkSummary(torNetworkSetting,
+					networkManager.getNetworkStatus());
 		} else if (preference == torMobile) {
 			boolean torMobileSetting = (Boolean) newValue;
 			storeTorMobileSetting(torMobileSetting);
@@ -759,6 +768,13 @@ public class SettingsFragment extends PreferenceFragmentCompat
 				LOG.info("Tor settings updated");
 				torSettings = migrateTorSettings(s.getSettings());
 				displaySettings();
+			}
+		} else if (e instanceof NetworkStatusEvent) {
+			NetworkStatusEvent n = (NetworkStatusEvent) e;
+			if (settingsLoaded) {
+				int torNetworkSetting = torSettings.getInt(PREF_TOR_NETWORK,
+						DEFAULT_PREF_TOR_NETWORK);
+				setTorNetworkSummary(torNetworkSetting, n.getStatus());
 			}
 		}
 	}
