@@ -28,7 +28,7 @@ import org.briarproject.briar.android.attachment.AttachmentRetriever;
 import org.briarproject.briar.android.util.UiUtils;
 import org.briarproject.briar.android.viewmodel.LiveEvent;
 import org.briarproject.briar.android.viewmodel.MutableLiveEvent;
-import org.briarproject.briar.api.messaging.AttachmentHeader;
+import org.briarproject.briar.api.media.AttachmentHeader;
 import org.briarproject.briar.api.messaging.MessagingManager;
 import org.briarproject.briar.api.messaging.PrivateMessage;
 import org.briarproject.briar.api.messaging.PrivateMessageFactory;
