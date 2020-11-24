@@ -13,7 +13,7 @@ public abstract class SettingsModule {
 
 	@Binds
 	@IntoMap
-	@ViewModelKey(ImageViewModel.class)
+	@ViewModelKey(SettingsViewModel.class)
 	abstract ViewModel bindSettingsViewModel(
 			SettingsViewModel settingsViewModel);
 
