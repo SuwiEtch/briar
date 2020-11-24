@@ -68,6 +68,7 @@ import org.briarproject.briar.android.privategroup.reveal.RevealContactsActivity
 import org.briarproject.briar.android.privategroup.reveal.RevealContactsFragment;
 import org.briarproject.briar.android.settings.SettingsActivity;
 import org.briarproject.briar.android.settings.SettingsFragment;
+import org.briarproject.briar.android.settings.SettingsModule;
 import org.briarproject.briar.android.sharing.BlogInvitationActivity;
 import org.briarproject.briar.android.sharing.BlogSharingStatusActivity;
 import org.briarproject.briar.android.sharing.ForumInvitationActivity;
@@ -94,7 +95,8 @@ import dagger.Component;
 		GroupListModule.class,
 		GroupMemberModule.class,
 		GroupRevealModule.class,
-		SharingModule.class
+		SharingModule.class,
+		SettingsModule.class
 }, dependencies = AndroidComponent.class)
 public interface ActivityComponent {
 
