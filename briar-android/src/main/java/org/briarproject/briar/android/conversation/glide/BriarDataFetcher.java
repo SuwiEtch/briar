@@ -8,8 +8,8 @@ import org.briarproject.bramble.api.client.ClientHelper;
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
-import org.briarproject.briar.android.attachment.AttachmentItem;
 import org.briarproject.briar.api.media.Attachment;
+import org.briarproject.briar.api.media.AttachmentHeader;
 import org.briarproject.briar.media.AttachmentReader;
 
 import java.io.InputStream;
@@ -34,7 +34,7 @@ class BriarDataFetcher implements DataFetcher<InputStream> {
 	private final ClientHelper clientHelper;
 	@DatabaseExecutor
 	private final Executor dbExecutor;
-	private final AttachmentItem attachment;
+	private final AttachmentHeader attachmentHeader;
 
 	@Nullable
 	private volatile InputStream inputStream;
@@ -42,10 +42,11 @@ class BriarDataFetcher implements DataFetcher<InputStream> {
 
 	@Inject
 	BriarDataFetcher(ClientHelper clientHelper,
-			@DatabaseExecutor Executor dbExecutor, AttachmentItem attachment) {
+			@DatabaseExecutor Executor dbExecutor,
+			AttachmentHeader attachmentHeader) {
 		this.clientHelper = clientHelper;
 		this.dbExecutor = dbExecutor;
-		this.attachment = attachment;
+		this.attachmentHeader = attachmentHeader;
 	}
 
 	@Override
@@ -55,7 +56,7 @@ class BriarDataFetcher implements DataFetcher<InputStream> {
 			if (cancel) return;
 			try {
 				Attachment a = AttachmentReader
-						.getAttachment(clientHelper, attachment.getHeader());
+						.getAttachment(clientHelper, attachmentHeader);
 				inputStream = a.getStream();
 				callback.onDataReady(inputStream);
 			} catch (DbException e) {
