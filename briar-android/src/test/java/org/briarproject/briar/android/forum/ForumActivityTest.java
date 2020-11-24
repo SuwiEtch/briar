@@ -6,7 +6,7 @@ import junit.framework.Assert;
 
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.Author;
-import org.briarproject.bramble.api.identity.AuthorInfo;
+import org.briarproject.briar.api.identity.AuthorInfo;
 import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.briar.android.TestBriarApplication;
 import org.briarproject.briar.android.controller.handler.UiResultExceptionHandler;
@@ -27,7 +27,7 @@ import java.util.Arrays;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.briarproject.bramble.api.identity.AuthorInfo.Status.UNKNOWN;
+import static org.briarproject.briar.api.identity.AuthorInfo.Status.UNKNOWN;
 import static org.briarproject.bramble.test.TestUtils.getAuthor;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;

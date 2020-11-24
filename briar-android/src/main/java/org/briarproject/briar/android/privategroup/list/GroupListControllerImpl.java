@@ -1,6 +1,5 @@
 package org.briarproject.briar.android.privategroup.list;
 
-import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.db.NoSuchGroupException;
@@ -8,7 +7,6 @@ import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.event.EventListener;
 import org.briarproject.bramble.api.identity.AuthorId;
-import org.briarproject.bramble.api.identity.AuthorInfo;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
@@ -21,6 +19,8 @@ import org.briarproject.briar.android.controller.handler.ExceptionHandler;
 import org.briarproject.briar.android.controller.handler.ResultExceptionHandler;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
+import org.briarproject.briar.api.identity.AuthorInfo;
+import org.briarproject.briar.api.identity.AuthorManager;
 import org.briarproject.briar.api.privategroup.PrivateGroup;
 import org.briarproject.briar.api.privategroup.PrivateGroupManager;
 import org.briarproject.briar.api.privategroup.event.GroupDissolvedEvent;
@@ -57,7 +57,7 @@ class GroupListControllerImpl extends DbControllerImpl
 
 	private final PrivateGroupManager groupManager;
 	private final GroupInvitationManager groupInvitationManager;
-	private final ContactManager contactManager;
+	private final AuthorManager authorManager;
 	private final AndroidNotificationManager notificationManager;
 	private final EventBus eventBus;
 
@@ -69,12 +69,12 @@ class GroupListControllerImpl extends DbControllerImpl
 	GroupListControllerImpl(@DatabaseExecutor Executor dbExecutor,
 			LifecycleManager lifecycleManager, PrivateGroupManager groupManager,
 			GroupInvitationManager groupInvitationManager,
-			ContactManager contactManager,
+			AuthorManager authorManager,
 			AndroidNotificationManager notificationManager, EventBus eventBus) {
 		super(dbExecutor, lifecycleManager);
 		this.groupManager = groupManager;
 		this.groupInvitationManager = groupInvitationManager;
-		this.contactManager = contactManager;
+		this.authorManager = authorManager;
 		this.notificationManager = notificationManager;
 		this.eventBus = eventBus;
 	}
@@ -153,7 +153,7 @@ class GroupListControllerImpl extends DbControllerImpl
 						if (authorInfos.containsKey(authorId)) {
 							authorInfo = authorInfos.get(authorId);
 						} else {
-							authorInfo = contactManager.getAuthorInfo(authorId);
+							authorInfo = authorManager.getAuthorInfo(authorId);
 							authorInfos.put(authorId, authorInfo);
 						}
 						GroupCount count = groupManager.getGroupCount(id);
