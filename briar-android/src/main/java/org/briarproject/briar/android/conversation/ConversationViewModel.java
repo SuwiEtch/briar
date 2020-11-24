@@ -14,7 +14,6 @@ import org.briarproject.bramble.api.db.TransactionManager;
 import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.event.EventListener;
-import org.briarproject.bramble.api.identity.AuthorId;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.settings.Settings;
 import org.briarproject.bramble.api.settings.SettingsManager;
@@ -25,9 +24,12 @@ import org.briarproject.briar.android.attachment.AttachmentCreator;
 import org.briarproject.briar.android.attachment.AttachmentManager;
 import org.briarproject.briar.android.attachment.AttachmentResult;
 import org.briarproject.briar.android.attachment.AttachmentRetriever;
+import org.briarproject.briar.android.contact.ContactItem;
 import org.briarproject.briar.android.util.UiUtils;
 import org.briarproject.briar.android.viewmodel.LiveEvent;
 import org.briarproject.briar.android.viewmodel.MutableLiveEvent;
+import org.briarproject.briar.api.identity.AuthorInfo;
+import org.briarproject.briar.api.identity.AuthorManager;
 import org.briarproject.briar.api.media.AttachmentHeader;
 import org.briarproject.briar.api.messaging.MessagingManager;
 import org.briarproject.briar.api.messaging.PrivateMessage;
@@ -47,8 +49,8 @@ import androidx.annotation.UiThread;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
+import static androidx.lifecycle.Transformations.map;
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
@@ -62,7 +64,7 @@ import static org.briarproject.briar.android.util.UiUtils.observeForeverOnce;
 public class ConversationViewModel extends AndroidViewModel
 		implements EventListener, AttachmentManager {
 
-	private static Logger LOG =
+	private static final Logger LOG =
 			getLogger(ConversationViewModel.class.getName());
 
 	private static final String SHOW_ONBOARDING_IMAGE =
@@ -76,6 +78,7 @@ public class ConversationViewModel extends AndroidViewModel
 	private final EventBus eventBus;
 	private final MessagingManager messagingManager;
 	private final ContactManager contactManager;
+	private final AuthorManager authorManager;
 	private final SettingsManager settingsManager;
 	private final PrivateMessageFactory privateMessageFactory;
 	private final AttachmentRetriever attachmentRetriever;
@@ -83,11 +86,10 @@ public class ConversationViewModel extends AndroidViewModel
 
 	@Nullable
 	private ContactId contactId = null;
-	private final MutableLiveData<Contact> contact = new MutableLiveData<>();
-	private final LiveData<AuthorId> contactAuthorId =
-			Transformations.map(contact, c -> c.getAuthor().getId());
-	private final LiveData<String> contactName =
-			Transformations.map(contact, UiUtils::getContactDisplayName);
+	private final MutableLiveData<ContactItem> contactItem =
+			new MutableLiveData<>();
+	private final LiveData<String> contactName = map(contactItem, c ->
+			UiUtils.getContactDisplayName(c.getContact()));
 	private final LiveData<GroupId> messagingGroupId;
 	private final MutableLiveData<Boolean> imageSupport =
 			new MutableLiveData<>();
@@ -109,6 +111,7 @@ public class ConversationViewModel extends AndroidViewModel
 			EventBus eventBus,
 			MessagingManager messagingManager,
 			ContactManager contactManager,
+			AuthorManager authorManager,
 			SettingsManager settingsManager,
 			PrivateMessageFactory privateMessageFactory,
 			AttachmentRetriever attachmentRetriever,
@@ -119,12 +122,13 @@ public class ConversationViewModel extends AndroidViewModel
 		this.eventBus = eventBus;
 		this.messagingManager = messagingManager;
 		this.contactManager = contactManager;
+		this.authorManager = authorManager;
 		this.settingsManager = settingsManager;
 		this.privateMessageFactory = privateMessageFactory;
 		this.attachmentRetriever = attachmentRetriever;
 		this.attachmentCreator = attachmentCreator;
-		messagingGroupId = Transformations
-				.map(contact, c -> messagingManager.getContactGroup(c).getId());
+		messagingGroupId = map(contactItem, c ->
+				messagingManager.getContactGroup(c.getContact()).getId());
 		contactDeleted.setValue(false);
 
 		eventBus.addListener(this);
@@ -167,7 +171,8 @@ public class ConversationViewModel extends AndroidViewModel
 			try {
 				long start = now();
 				Contact c = contactManager.getContact(contactId);
-				contact.postValue(c);
+				AuthorInfo authorInfo = authorManager.getAuthorInfo(c);
+				contactItem.postValue(new ContactItem(c, authorInfo));
 				logDuration(LOG, "Loading contact", start);
 				start = now();
 				checkFeaturesAndOnboarding(contactId);
@@ -318,12 +323,8 @@ public class ConversationViewModel extends AndroidViewModel
 		return attachmentRetriever;
 	}
 
-	LiveData<Contact> getContact() {
-		return contact;
-	}
-
-	LiveData<AuthorId> getContactAuthorId() {
-		return contactAuthorId;
+	LiveData<ContactItem> getContactItem() {
+		return contactItem;
 	}
 
 	LiveData<String> getContactDisplayName() {
