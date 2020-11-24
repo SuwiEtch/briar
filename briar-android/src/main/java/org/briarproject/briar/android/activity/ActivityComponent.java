@@ -66,8 +66,10 @@ import org.briarproject.briar.android.privategroup.memberlist.GroupMemberModule;
 import org.briarproject.briar.android.privategroup.reveal.GroupRevealModule;
 import org.briarproject.briar.android.privategroup.reveal.RevealContactsActivity;
 import org.briarproject.briar.android.privategroup.reveal.RevealContactsFragment;
+import org.briarproject.briar.android.settings.ConfirmAvatarDialogFragment;
 import org.briarproject.briar.android.settings.SettingsActivity;
 import org.briarproject.briar.android.settings.SettingsFragment;
+import org.briarproject.briar.android.settings.SettingsModule;
 import org.briarproject.briar.android.sharing.BlogInvitationActivity;
 import org.briarproject.briar.android.sharing.BlogSharingStatusActivity;
 import org.briarproject.briar.android.sharing.ForumInvitationActivity;
@@ -233,5 +235,7 @@ public interface ActivityComponent {
 	void inject(AliasDialogFragment aliasDialogFragment);
 
 	void inject(ImageFragment imageFragment);
+
+	void inject(ConfirmAvatarDialogFragment fragment);
 
 }
