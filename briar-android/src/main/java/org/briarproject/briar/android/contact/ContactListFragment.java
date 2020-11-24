@@ -42,6 +42,8 @@ import org.briarproject.briar.api.client.MessageTracker.GroupCount;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 import org.briarproject.briar.api.conversation.event.ConversationMessageReceivedEvent;
+import org.briarproject.briar.api.identity.AuthorInfo;
+import org.briarproject.briar.api.identity.AuthorManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +98,8 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 	// Fields that are accessed from background threads must be volatile
 	@Inject
 	volatile ContactManager contactManager;
+	@Inject
+	volatile AuthorManager authorManager;
 	@Inject
 	volatile ConversationManager conversationManager;
 
@@ -231,9 +235,11 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 						ContactId id = c.getId();
 						GroupCount count =
 								conversationManager.getGroupCount(id);
+						AuthorInfo authorInfo = authorManager.getAuthorInfo(c);
 						boolean connected =
 								connectionRegistry.isConnected(c.getId());
-						contacts.add(new ContactListItem(c, connected, count));
+						contacts.add(new ContactListItem(c, authorInfo,
+								connected, count));
 					} catch (NoSuchContactException e) {
 						// Continue
 					}

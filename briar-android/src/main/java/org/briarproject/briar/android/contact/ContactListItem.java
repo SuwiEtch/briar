@@ -4,6 +4,7 @@ import org.briarproject.bramble.api.contact.Contact;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
+import org.briarproject.briar.api.identity.AuthorInfo;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -15,9 +16,9 @@ public class ContactListItem extends ContactItem {
 	private long timestamp;
 	private int unread;
 
-	public ContactListItem(Contact contact, boolean connected,
-			GroupCount count) {
-		super(contact, connected);
+	public ContactListItem(Contact contact, AuthorInfo authorInfo,
+			boolean connected, GroupCount count) {
+		super(contact, authorInfo, connected);
 		this.empty = count.getMsgCount() == 0;
 		this.unread = count.getUnreadCount();
 		this.timestamp = count.getLatestMsgTime();
