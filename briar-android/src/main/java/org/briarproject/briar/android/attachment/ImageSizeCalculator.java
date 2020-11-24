@@ -23,7 +23,7 @@ import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.util.LogUtils.logException;
 
 @NotNullByDefault
-public class ImageSizeCalculator {
+class ImageSizeCalculator {
 
 	private static final Logger LOG =
 			getLogger(ImageSizeCalculator.class.getName());
@@ -32,11 +32,11 @@ public class ImageSizeCalculator {
 
 	private final ImageHelper imageHelper;
 
-	public ImageSizeCalculator(ImageHelper imageHelper) {
+	ImageSizeCalculator(ImageHelper imageHelper) {
 		this.imageHelper = imageHelper;
 	}
 
-	public Size getSize(InputStream is, String contentType) {
+	Size getSize(InputStream is, String contentType) {
 		Size size = new Size();
 		is = new MarkEnforcingInputStream(is);
 		is.mark(READ_LIMIT);
