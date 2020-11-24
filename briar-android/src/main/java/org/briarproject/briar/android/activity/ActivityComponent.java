@@ -95,8 +95,7 @@ import dagger.Component;
 		GroupListModule.class,
 		GroupMemberModule.class,
 		GroupRevealModule.class,
-		SharingModule.class,
-		SettingsModule.class
+		SharingModule.class
 }, dependencies = AndroidComponent.class)
 public interface ActivityComponent {
 
