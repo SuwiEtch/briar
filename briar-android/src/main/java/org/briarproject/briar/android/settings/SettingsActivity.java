@@ -134,8 +134,10 @@ public class SettingsActivity extends BriarActivity {
 		}
 		Uri uri = uris.get(0);
 
-		ConfirmAvatarDialogFragment dialog =ConfirmAvatarDialogFragment.newInstance(uri);
-		dialog.show(getSupportFragmentManager(), ConfirmAvatarDialogFragment.TAG);
+		ConfirmAvatarDialogFragment dialog =
+				ConfirmAvatarDialogFragment.newInstance(uri);
+		dialog.show(getSupportFragmentManager(),
+				ConfirmAvatarDialogFragment.TAG);
 	}
 
 }
