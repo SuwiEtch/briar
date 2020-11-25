@@ -1,6 +1,5 @@
 package org.briarproject.briar.android.settings;
 
-import org.briarproject.briar.android.conversation.ImageViewModel;
 import org.briarproject.briar.android.viewmodel.ViewModelKey;
 
 import androidx.lifecycle.ViewModel;

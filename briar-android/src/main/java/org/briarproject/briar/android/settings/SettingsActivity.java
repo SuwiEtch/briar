@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.briarproject.bramble.api.db.DbException;
-import org.briarproject.bramble.api.identity.AuthorId;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
@@ -30,7 +29,6 @@ import im.delight.android.identicons.IdenticonDrawable;
 import static android.content.Intent.ACTION_GET_CONTENT;
 import static android.content.Intent.ACTION_OPEN_DOCUMENT;
 import static android.content.Intent.CATEGORY_OPENABLE;
-import static android.content.Intent.EXTRA_ALLOW_MULTIPLE;
 import static android.content.Intent.EXTRA_MIME_TYPES;
 import static android.os.Build.VERSION.SDK_INT;
 import static org.briarproject.bramble.util.AndroidUtils.getSupportedImageContentTypes;
