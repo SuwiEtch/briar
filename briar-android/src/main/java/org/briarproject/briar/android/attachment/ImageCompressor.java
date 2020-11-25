@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +31,7 @@ public class ImageCompressor {
 	}
 
 	@VisibleForTesting
-	public InputStream compressImage(InputStream is, String contentType,
+	public byte[] compressImage(InputStream is, String contentType,
 			int maxSize) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
@@ -45,7 +44,7 @@ public class ImageCompressor {
 						LOG.info("Compressed image to "
 								+ out.size() + " bytes, quality " + quality);
 					}
-					return new ByteArrayInputStream(out.toByteArray());
+					return out.toByteArray();
 				}
 				out.reset();
 			}
