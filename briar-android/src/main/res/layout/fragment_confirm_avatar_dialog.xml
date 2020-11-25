@@ -6,6 +6,7 @@
 
 	<de.hdodenhof.circleimageview.CircleImageView
 		android:id="@+id/image"
+		style="@style/BriarAvatar"
 		android:layout_gravity="center_horizontal"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
