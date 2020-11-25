@@ -1,5 +1,7 @@
 package org.briarproject.briar.android.image;
 
+import androidx.annotation.VisibleForTesting;
+
 public class Size {
 
 	final int width;
@@ -14,7 +16,8 @@ public class Size {
 		this.error = false;
 	}
 
-	Size() {
+	@VisibleForTesting
+	public Size() {
 		this.width = 0;
 		this.height = 0;
 		this.mimeType = "";
