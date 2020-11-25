@@ -118,9 +118,7 @@ class AttachmentCreationTask {
 		if (is == null) throw new IOException();
 		ImageCompressor imageCompressor =
 				new ImageCompressor(imageSizeCalculator);
-		byte[] compressed = imageCompressor
-				.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
-		is = new ByteArrayInputStream(compressed);
+		is = imageCompressor.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
 		contentType = "image/jpeg";
 		long timestamp = System.currentTimeMillis();
 		AttachmentHeader h = messagingManager
