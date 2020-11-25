@@ -43,7 +43,8 @@ class AttachmentCreationTask {
 	private static Logger LOG =
 			getLogger(AttachmentCreationTask.class.getName());
 
-	private static final int MAX_ATTACHMENT_DIMENSION = 1000;
+	@VisibleForTesting
+	public static final int MAX_ATTACHMENT_DIMENSION = 1000;
 
 	private final MessagingManager messagingManager;
 	private final ContentResolver contentResolver;
@@ -115,7 +116,9 @@ class AttachmentCreationTask {
 		}
 		InputStream is = contentResolver.openInputStream(uri);
 		if (is == null) throw new IOException();
-		is = compressImage(is, contentType);
+		ImageCompressor imageCompressor =
+				new ImageCompressor(imageSizeCalculator);
+		is = imageCompressor.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
 		contentType = "image/jpeg";
 		long timestamp = System.currentTimeMillis();
 		AttachmentHeader h = messagingManager
@@ -125,51 +128,4 @@ class AttachmentCreationTask {
 		return h;
 	}
 
-	@VisibleForTesting
-	InputStream compressImage(InputStream is, String contentType)
-			throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try {
-			Bitmap bitmap = createBitmap(is, contentType);
-			for (int quality = 100; quality >= 0; quality -= 10) {
-				if (!bitmap.compress(JPEG, quality, out))
-					throw new IOException();
-				if (out.size() <= MAX_IMAGE_SIZE) {
-					if (LOG.isLoggable(INFO)) {
-						LOG.info("Compressed image to "
-								+ out.size() + " bytes, quality " + quality);
-					}
-					return new ByteArrayInputStream(out.toByteArray());
-				}
-				out.reset();
-			}
-			throw new IOException();
-		} finally {
-			tryToClose(is, LOG, WARNING);
-		}
-	}
-
-	private Bitmap createBitmap(InputStream is, String contentType)
-			throws IOException {
-		is = new BufferedInputStream(is);
-		Size size = imageSizeCalculator.getSize(is, contentType);
-		if (size.error) throw new IOException();
-		if (LOG.isLoggable(INFO))
-			LOG.info("Original image size: " + size.width + "x" + size.height);
-		int dimension = Math.max(size.width, size.height);
-		int inSampleSize = 1;
-		while (dimension > MAX_ATTACHMENT_DIMENSION) {
-			inSampleSize *= 2;
-			dimension /= 2;
-		}
-		if (LOG.isLoggable(INFO))
-			LOG.info("Scaling attachment by factor of " + inSampleSize);
-		Options options = new Options();
-		options.inSampleSize = inSampleSize;
-		if (contentType.equals("image/png"))
-			options.inPreferredConfig = Bitmap.Config.RGB_565;
-		Bitmap bitmap = decodeStream(is, null, options);
-		if (bitmap == null) throw new IOException();
-		return bitmap;
-	}
 }

@@ -29,7 +29,9 @@ abstract class AbstractAttachmentCreationTaskTest {
 	void testCompress(String filename, String contentType)
 			throws IOException {
 		InputStream is = getAssetManager().open(filename);
-		task.compressImage(is, contentType);
+		ImageCompressor imageCompressor =
+				new ImageCompressor(imageSizeCalculator);
+		imageCompressor.compressImage(is, contentType, AttachmentCreationTask.MAX_ATTACHMENT_DIMENSION);
 	}
 
 	static AssetManager getAssetManager() {
