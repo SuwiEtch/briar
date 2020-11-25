@@ -1,4 +1,4 @@
-package org.briarproject.briar.android.image;
+package org.briarproject.briar.android.attachment.image;
 
 import android.graphics.BitmapFactory;
 import android.webkit.MimeTypeMap;
@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
 public class ImageHelperImpl implements ImageHelper {
 
 	@Inject
-	ImageHelperImpl() {
+	public ImageHelperImpl() {
 	}
 
 	@Override

@@ -1,9 +1,9 @@
-package org.briarproject.briar.android.image;
+package org.briarproject.briar.android.attachment.image;
 
 import com.bumptech.glide.util.MarkEnforcingInputStream;
 
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
-import org.briarproject.briar.android.image.ImageHelper.DecodeResult;
+import org.briarproject.briar.android.attachment.image.ImageHelper.DecodeResult;
 
 import java.io.IOException;
 import java.io.InputStream;

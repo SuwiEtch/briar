@@ -1,4 +1,4 @@
-package org.briarproject.briar.android.image;
+package org.briarproject.briar.android.attachment.image;
 
 import androidx.annotation.VisibleForTesting;
 
