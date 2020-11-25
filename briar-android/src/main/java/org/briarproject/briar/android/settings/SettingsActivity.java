@@ -1,6 +1,8 @@
 package org.briarproject.briar.android.settings;
 
+import android.content.ClipData;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,8 +13,12 @@ import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
 import org.briarproject.briar.android.activity.BriarActivity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -97,6 +103,40 @@ public class SettingsActivity extends BriarActivity {
 			intent.putExtra(EXTRA_MIME_TYPES, getSupportedImageContentTypes());
 		if (SDK_INT >= 18) intent.putExtra(EXTRA_ALLOW_MULTIPLE, true);
 		return intent;
+	}
+
+	@Override
+	protected void onActivityResult(int request, int result,
+			@Nullable Intent data) {
+		super.onActivityResult(request, result, data);
+
+		if (request == REQUEST_AVATAR_IMAGE && result == RESULT_OK) {
+			onAvatarImageReceived(data);
+		}
+	}
+
+	private void onAvatarImageReceived(Intent resultData) {
+		if (resultData == null) return;
+		List<Uri> uris = new ArrayList<>();
+		if (resultData.getData() != null) {
+			uris.add(resultData.getData());
+		} else if (SDK_INT >= 18 && resultData.getClipData() != null) {
+			ClipData clipData = resultData.getClipData();
+			for (int i = 0; i < clipData.getItemCount(); i++) {
+				uris.add(clipData.getItemAt(i).getUri());
+			}
+		}
+		if (uris.isEmpty()) {
+			// TODO: show message that an image needs to be selected
+			return;
+		} else if (uris.size() != 1) {
+			// TODO: show message that only one image should be selected
+			return;
+		}
+		Uri uri = uris.get(0);
+
+		ConfirmAvatarDialogFragment dialog =ConfirmAvatarDialogFragment.newInstance(uri);
+		dialog.show(getSupportFragmentManager(), ConfirmAvatarDialogFragment.TAG);
 	}
 
 }
