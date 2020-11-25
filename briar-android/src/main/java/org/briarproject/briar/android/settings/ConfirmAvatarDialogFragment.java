@@ -41,7 +41,7 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		builder.setTitle(R.string.dialog_confirm_profile_picture_title)
 				.setMessage(R.string.dialog_confirm_profile_picture_question);
 		builder.setNegativeButton(R.string.cancel, null);
-		builder.setPositiveButton(R.string.accept, (dialog, id) -> {
+		builder.setPositiveButton(R.string.dialog_confirm_profile_picture_set, (dialog, id) -> {
 			//TODO: handle this
 		});
 
