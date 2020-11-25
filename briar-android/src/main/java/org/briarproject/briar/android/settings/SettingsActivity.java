@@ -101,7 +101,6 @@ public class SettingsActivity extends BriarActivity {
 		intent.addCategory(CATEGORY_OPENABLE);
 		if (SDK_INT >= 19)
 			intent.putExtra(EXTRA_MIME_TYPES, getSupportedImageContentTypes());
-		if (SDK_INT >= 18) intent.putExtra(EXTRA_ALLOW_MULTIPLE, true);
 		return intent;
 	}
 
