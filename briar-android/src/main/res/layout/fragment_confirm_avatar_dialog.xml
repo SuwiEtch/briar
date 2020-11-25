@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:paddingHorizontal="?dialogPreferredPadding"
 	android:orientation="vertical">
 
 	<de.hdodenhof.circleimageview.CircleImageView
@@ -10,5 +11,10 @@
 		android:layout_gravity="center_horizontal"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/dialog_confirm_profile_picture_remark"/>
 
 </LinearLayout>

@@ -6,9 +6,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.AuthorId;
+import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
 import org.briarproject.briar.android.activity.BriarActivity;
@@ -57,12 +59,16 @@ public class SettingsActivity extends BriarActivity {
 				ViewModelProviders.of(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 
-		AuthorId authorId = null;
 		try {
-			authorId = settingsViewModel.getOwnAuthorId();
-			CircleImageView avatar = findViewById(R.id.avatarImage);
-			avatar.setImageDrawable(
-					new IdenticonDrawable(authorId.getBytes()));
+			LocalAuthor ourselves =
+					settingsViewModel.getOurselves();
+
+			TextView textViewUserName = findViewById(R.id.avatarTitle);
+			textViewUserName.setText(ourselves.getName());
+
+			CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
+			imageViewAvatar.setImageDrawable(
+					new IdenticonDrawable(ourselves.getId().getBytes()));
 		} catch (DbException e) {
 			e.printStackTrace();
 		}

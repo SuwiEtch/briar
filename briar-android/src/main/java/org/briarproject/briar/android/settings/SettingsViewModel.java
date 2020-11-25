@@ -4,8 +4,8 @@ import android.app.Application;
 
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
-import org.briarproject.bramble.api.identity.AuthorId;
 import org.briarproject.bramble.api.identity.IdentityManager;
+import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 
 import java.util.concurrent.Executor;
@@ -36,7 +36,8 @@ public class SettingsViewModel extends AndroidViewModel {
 		this.dbExecutor = dbExecutor;
 	}
 
-	public AuthorId getOwnAuthorId() throws DbException {
-		return identityManager.getLocalAuthor().getId();
+	public LocalAuthor getOurselves() throws DbException {
+		return identityManager.getLocalAuthor();
 	}
+
 }

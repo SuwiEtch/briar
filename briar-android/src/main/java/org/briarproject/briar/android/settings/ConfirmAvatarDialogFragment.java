@@ -38,13 +38,10 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 				factory.inflate(R.layout.fragment_confirm_avatar_dialog, null);
 		builder.setView(view);
 
-		// TODO: move strings to strings.xml
-		builder.setTitle("Please confirm")
-				.setMessage("Do you want to use this image?");
-		builder.setNegativeButton(android.R.string.no, (dialog, id) -> {
-			// nothing to do here
-		});
-		builder.setPositiveButton(android.R.string.yes, (dialog, id) -> {
+		builder.setTitle(R.string.dialog_confirm_profile_picture_title)
+				.setMessage(R.string.dialog_confirm_profile_picture_question);
+		builder.setNegativeButton(R.string.cancel, null);
+		builder.setPositiveButton(R.string.accept, (dialog, id) -> {
 			//TODO: handle this
 		});
 

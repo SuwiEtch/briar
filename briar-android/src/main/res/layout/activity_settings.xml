@@ -53,15 +53,14 @@
 				android:layout_marginRight="16dp"
 				android:paddingStart="@dimen/margin_medium"
 				android:paddingEnd="@dimen/margin_medium"
-				android:text="Profile picture"
-				android:textColor="#ffffff"
+				android:textColor="@color/action_bar_text"
 				android:textSize="@dimen/text_size_medium"
 				app:layout_constraintBottom_toTopOf="@+id/avatarExplanation"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toEndOf="@+id/avatarImage"
 				app:layout_constraintTop_toTopOf="parent"
 				app:layout_constraintVertical_chainStyle="packed"
-				tools:text="Profile picture" />
+				tools:text="username" />
 
 			<TextView
 				android:id="@+id/avatarExplanation"
@@ -74,8 +73,8 @@
 				android:layout_marginBottom="16dp"
 				android:paddingStart="@dimen/margin_medium"
 				android:paddingEnd="@dimen/margin_medium"
-				android:text="Change your profile picture"
-				android:textColor="#ffffff"
+				android:text="@string/change_profile_picture"
+				android:textColor="@color/action_bar_text"
 				android:textSize="@dimen/text_size_small"
 				app:layout_constraintBottom_toBottomOf="parent"
 				app:layout_constraintEnd_toEndOf="parent"
