@@ -2,6 +2,10 @@ package org.briarproject.briar.android.attachment;
 
 import android.app.Application;
 
+import org.briarproject.briar.android.image.ImageHelper;
+import org.briarproject.briar.android.image.ImageHelperImpl;
+import org.briarproject.briar.android.image.ImageSizeCalculator;
+
 import javax.inject.Singleton;
 
 import dagger.Module;

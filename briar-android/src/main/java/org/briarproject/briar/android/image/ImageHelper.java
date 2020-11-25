@@ -1,4 +1,4 @@
-package org.briarproject.briar.android.attachment;
+package org.briarproject.briar.android.image;
 
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 

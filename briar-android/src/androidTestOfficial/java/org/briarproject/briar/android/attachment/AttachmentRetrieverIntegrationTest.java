@@ -2,6 +2,9 @@ package org.briarproject.briar.android.attachment;
 
 import org.briarproject.bramble.api.UniqueId;
 import org.briarproject.bramble.api.sync.MessageId;
+import org.briarproject.briar.android.image.ImageHelper;
+import org.briarproject.briar.android.image.ImageHelperImpl;
+import org.briarproject.briar.android.image.ImageSizeCalculator;
 import org.briarproject.briar.api.messaging.Attachment;
 import org.briarproject.briar.api.messaging.AttachmentHeader;
 import org.junit.Test;

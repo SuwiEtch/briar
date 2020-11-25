@@ -2,6 +2,9 @@ package org.briarproject.briar.android.attachment;
 
 import android.content.res.AssetManager;
 
+import org.briarproject.briar.android.image.ImageHelper;
+import org.briarproject.briar.android.image.ImageHelperImpl;
+import org.briarproject.briar.android.image.ImageSizeCalculator;
 import org.junit.Before;
 
 import java.io.IOException;
