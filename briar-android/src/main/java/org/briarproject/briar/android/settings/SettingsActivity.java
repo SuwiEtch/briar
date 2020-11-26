@@ -13,6 +13,7 @@ import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
 import org.briarproject.briar.android.activity.BriarActivity;
+import org.briarproject.briar.android.viewmodel.LiveResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -57,18 +59,19 @@ public class SettingsActivity extends BriarActivity {
 				ViewModelProviders.of(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 
-		try {
-			LocalAuthor ourselves =
-					settingsViewModel.getOurselves();
+		LiveResult<LocalAuthor> ourselves =
+				settingsViewModel.getOurselves();
 
+		if (ourselves.hasError()) {
+			// TODO: what are we going to do here?
+		} else {
+			LocalAuthor us = ourselves.getResultOrNull();
 			TextView textViewUserName = findViewById(R.id.avatarTitle);
-			textViewUserName.setText(ourselves.getName());
+			textViewUserName.setText(us.getName());
 
 			CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
 			imageViewAvatar.setImageDrawable(
-					new IdenticonDrawable(ourselves.getId().getBytes()));
-		} catch (DbException e) {
-			e.printStackTrace();
+					new IdenticonDrawable(us.getId().getBytes()));
 		}
 
 		View avatarGroup = findViewById(R.id.avatarGroup);

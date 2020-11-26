@@ -7,6 +7,7 @@ import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.IdentityManager;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
+import org.briarproject.briar.android.viewmodel.LiveResult;
 
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
@@ -36,8 +37,12 @@ public class SettingsViewModel extends AndroidViewModel {
 		this.dbExecutor = dbExecutor;
 	}
 
-	public LocalAuthor getOurselves() throws DbException {
-		return identityManager.getLocalAuthor();
+	public LiveResult<LocalAuthor> getOurselves() {
+		try {
+			return new LiveResult<>(identityManager.getLocalAuthor());
+		} catch (DbException e) {
+			return new LiveResult<>(e);
+		}
 	}
 
 }
