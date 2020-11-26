@@ -13,6 +13,7 @@ import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
+import org.briarproject.briar.android.viewmodel.LiveResult;
 
 import javax.inject.Inject;
 
@@ -73,14 +74,15 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		Bundle args = requireArguments();
 		String argUri = requireNonNull(args.getString(ARG_URI));
 
-		try {
-			LocalAuthor ourselves =
-					settingsViewModel.getOurselves();
+		LiveResult<LocalAuthor> ourselves =
+				settingsViewModel.getOurselves();
+		if (ourselves.hasError()) {
+			// TODO: what are we going to do here?
+		} else {
+			LocalAuthor us = ourselves.getResultOrNull();
 
 			TextView textViewUserName = view.findViewById(R.id.username);
-			textViewUserName.setText(ourselves.getName());
-		} catch (DbException e) {
-			e.printStackTrace();
+			textViewUserName.setText(us.getName());
 		}
 
 		Uri uri = Uri.parse(argUri);
