@@ -1,6 +1,7 @@
 package org.briarproject.briar.android.settings;
 
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,10 +11,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
 import org.briarproject.briar.android.viewmodel.LiveResult;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -52,6 +56,8 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		((BaseActivity) requireActivity()).getActivityComponent().inject(this);
 	}
 
+	private Uri uri;
+
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		ViewModelProvider provider =
 				ViewModelProviders.of(this, viewModelFactory);
@@ -69,11 +75,12 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		builder.setNegativeButton(R.string.cancel, null);
 		builder.setPositiveButton(R.string.dialog_confirm_profile_picture_set,
 				(dialog, id) -> {
-					//TODO: handle this
+					trySetAvatar();
 				});
 
 		Bundle args = requireArguments();
 		String argUri = requireNonNull(args.getString(ARG_URI));
+		uri = Uri.parse(argUri);
 
 		LiveResult<LocalAuthor> ourselves =
 				settingsViewModel.getOurselves();
@@ -89,12 +96,20 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 			textViewUserName.setText(us.getName());
 		}
 
-		Uri uri = Uri.parse(argUri);
 		ImageView imageView = view.findViewById(R.id.image);
 		imageView.setImageResource(R.drawable.contact_connected);
 		imageView.setImageURI(uri);
 
 		return builder.create();
+	}
+
+	private void trySetAvatar() {
+		try {
+			ContentResolver contentResolver = getContext().getContentResolver();
+			settingsViewModel.setAvatar(contentResolver, uri);
+		} catch (IOException | DbException e) {
+			Toast.makeText(getActivity(), "An error occurred while setting the avatar image", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 }
