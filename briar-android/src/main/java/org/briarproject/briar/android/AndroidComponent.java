@@ -47,7 +47,9 @@ import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.feed.FeedManager;
 import org.briarproject.briar.api.forum.ForumManager;
 import org.briarproject.briar.api.forum.ForumSharingManager;
+import org.briarproject.briar.api.identity.AuthorManager;
 import org.briarproject.briar.api.introduction.IntroductionManager;
+import org.briarproject.briar.api.media.AttachmentReader;
 import org.briarproject.briar.api.messaging.MessagingManager;
 import org.briarproject.briar.api.messaging.PrivateMessageFactory;
 import org.briarproject.briar.api.privategroup.GroupMessageFactory;
@@ -91,6 +93,10 @@ public interface AndroidComponent
 	LifecycleManager lifecycleManager();
 
 	IdentityManager identityManager();
+
+	AttachmentReader attachmentReader();
+
+	AuthorManager authorManager();
 
 	PluginManager pluginManager();
 

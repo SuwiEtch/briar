@@ -30,12 +30,9 @@ import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager.ClientVersioningHook;
 import org.briarproject.briar.api.avatar.AvatarManager;
 import org.briarproject.briar.api.avatar.event.AvatarUpdatedEvent;
-import org.briarproject.briar.api.media.Attachment;
 import org.briarproject.briar.api.media.AttachmentHeader;
 import org.briarproject.briar.api.media.FileTooBigException;
-import org.briarproject.briar.api.media.InvalidAttachmentException;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,8 +47,8 @@ import static org.briarproject.bramble.util.IoUtils.copyAndClose;
 import static org.briarproject.briar.avatar.AvatarConstants.GROUP_KEY_CONTACT_ID;
 import static org.briarproject.briar.avatar.AvatarConstants.MSG_KEY_VERSION;
 import static org.briarproject.briar.avatar.AvatarConstants.MSG_TYPE_UPDATE;
-import static org.briarproject.briar.media.MediaConstants.MSG_KEY_CONTENT_TYPE;
-import static org.briarproject.briar.media.MediaConstants.MSG_KEY_DESCRIPTOR_LENGTH;
+import static org.briarproject.briar.api.media.MediaConstants.MSG_KEY_CONTENT_TYPE;
+import static org.briarproject.briar.api.media.MediaConstants.MSG_KEY_DESCRIPTOR_LENGTH;
 
 @Immutable
 @NotNullByDefault
@@ -220,12 +217,11 @@ class AvatarManagerImpl implements AvatarManager, OpenDatabaseHook, ContactHook,
 
 	@Nullable
 	@Override
-	public AttachmentHeader getAvatarHeader(Contact c) throws DbException {
+	public AttachmentHeader getAvatarHeader(Transaction txn, Contact c)
+			throws DbException {
 		try {
 			Group g = getGroup(c.getAuthor().getId());
-			return db.transactionWithNullableResult(true, txn ->
-					getAvatarHeader(txn, g.getId())
-			);
+			return getAvatarHeader(txn, g.getId());
 		} catch (FormatException e) {
 			throw new DbException(e);
 		}
@@ -233,12 +229,11 @@ class AvatarManagerImpl implements AvatarManager, OpenDatabaseHook, ContactHook,
 
 	@Nullable
 	@Override
-	public AttachmentHeader getMyAvatarHeader() throws DbException {
+	public AttachmentHeader getMyAvatarHeader(Transaction txn)
+			throws DbException {
 		try {
-			return db.transactionWithNullableResult(true, txn -> {
-				Group g = getOurGroup(txn);
-				return getAvatarHeader(txn, g.getId());
-			});
+			Group g = getOurGroup(txn);
+			return getAvatarHeader(txn, g.getId());
 		} catch (FormatException e) {
 			throw new DbException(e);
 		}
@@ -250,23 +245,6 @@ class AvatarManagerImpl implements AvatarManager, OpenDatabaseHook, ContactHook,
 		LatestUpdate latest = findLatest(txn, groupId);
 		if (latest == null) return null;
 		return new AttachmentHeader(latest.messageId, latest.contentType);
-	}
-
-	@Override
-	public Attachment getAvatar(AttachmentHeader h) throws DbException {
-		MessageId m = h.getMessageId();
-		byte[] body = clientHelper.getMessage(m).getBody();
-		try {
-			BdfDictionary meta = clientHelper.getMessageMetadataAsDictionary(m);
-			String contentType = meta.getString(MSG_KEY_CONTENT_TYPE);
-			if (!contentType.equals(h.getContentType()))
-				throw new InvalidAttachmentException();
-			int offset = meta.getLong(MSG_KEY_DESCRIPTOR_LENGTH).intValue();
-			return new Attachment(h, new ByteArrayInputStream(body, offset,
-					body.length - offset));
-		} catch (FormatException e) {
-			throw new DbException(e);
-		}
 	}
 
 	@Nullable

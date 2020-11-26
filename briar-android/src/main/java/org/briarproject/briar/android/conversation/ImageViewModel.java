@@ -17,7 +17,7 @@ import org.briarproject.briar.android.attachment.AttachmentItem;
 import org.briarproject.briar.android.viewmodel.LiveEvent;
 import org.briarproject.briar.android.viewmodel.MutableLiveEvent;
 import org.briarproject.briar.api.media.Attachment;
-import org.briarproject.briar.api.messaging.MessagingManager;
+import org.briarproject.briar.api.media.AttachmentReader;
 import org.briarproject.briar.api.messaging.event.AttachmentReceivedEvent;
 
 import java.io.File;
@@ -51,9 +51,9 @@ import static org.briarproject.bramble.util.LogUtils.logException;
 @NotNullByDefault
 public class ImageViewModel extends AndroidViewModel implements EventListener {
 
-	private static Logger LOG = getLogger(ImageViewModel.class.getName());
+	private static final Logger LOG = getLogger(ImageViewModel.class.getName());
 
-	private final MessagingManager messagingManager;
+	private final AttachmentReader attachmentReader;
 	private final EventBus eventBus;
 	@DatabaseExecutor
 	private final Executor dbExecutor;
@@ -61,8 +61,8 @@ public class ImageViewModel extends AndroidViewModel implements EventListener {
 	private final Executor ioExecutor;
 
 	private boolean receivedAttachmentsInitialized = false;
-	private HashMap<MessageId, MutableLiveEvent<Boolean>> receivedAttachments =
-			new HashMap<>();
+	private final HashMap<MessageId, MutableLiveEvent<Boolean>>
+			receivedAttachments = new HashMap<>();
 
 	/**
 	 * true means there was an error saving the image, false if image was saved.
@@ -74,12 +74,11 @@ public class ImageViewModel extends AndroidViewModel implements EventListener {
 	private int toolbarTop, toolbarBottom;
 
 	@Inject
-	ImageViewModel(Application application,
-			MessagingManager messagingManager, EventBus eventBus,
-			@DatabaseExecutor Executor dbExecutor,
+	ImageViewModel(Application application, AttachmentReader attachmentReader,
+			EventBus eventBus, @DatabaseExecutor Executor dbExecutor,
 			@IoExecutor Executor ioExecutor) {
 		super(application);
-		this.messagingManager = messagingManager;
+		this.attachmentReader = attachmentReader;
 		this.eventBus = eventBus;
 		this.dbExecutor = dbExecutor;
 		this.ioExecutor = ioExecutor;
@@ -198,7 +197,7 @@ public class ImageViewModel extends AndroidViewModel implements EventListener {
 		dbExecutor.execute(() -> {
 			try {
 				Attachment a =
-						messagingManager.getAttachment(attachment.getHeader());
+						attachmentReader.getAttachment(attachment.getHeader());
 				copyImageFromDb(a, osp, afterCopy);
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
