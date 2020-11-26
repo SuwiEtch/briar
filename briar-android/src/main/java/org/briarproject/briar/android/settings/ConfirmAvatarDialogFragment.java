@@ -8,8 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
@@ -22,6 +22,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
+import static android.widget.Toast.LENGTH_LONG;
 import static java.util.Objects.requireNonNull;
 
 public class ConfirmAvatarDialogFragment extends DialogFragment {
@@ -77,7 +78,10 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		LiveResult<LocalAuthor> ourselves =
 				settingsViewModel.getOurselves();
 		if (ourselves.hasError()) {
-			// TODO: what are we going to do here?
+			Toast.makeText(getContext(), R.string.profile_picture_internal_error, LENGTH_LONG).show();
+			// It's not exactly documented that it works to dismiss a dialog at this stage,
+			// but I also haven't been able to find a better way to do it.
+			dismiss();
 		} else {
 			LocalAuthor us = ourselves.getResultOrNull();
 

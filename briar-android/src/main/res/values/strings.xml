@@ -459,6 +459,7 @@
 	<string name="dialog_confirm_profile_picture_question">Do you want to use this image as your profile picture?</string>
 	<string name="dialog_confirm_profile_picture_remark">Only your contacts can see your profile image</string>
 	<string name="dialog_confirm_profile_picture_set">Set picture</string>
+	<string name="profile_picture_internal_error">We\'re sorry, but something went wrong.</string>
 
 	<!-- Settings Display -->
 	<string name="pref_language_title">Language &amp; region</string>

@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
@@ -22,7 +21,6 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -64,6 +62,7 @@ public class SettingsActivity extends BriarActivity {
 
 		if (ourselves.hasError()) {
 			// TODO: what are we going to do here?
+			supportFinishAfterTransition();
 		} else {
 			LocalAuthor us = ourselves.getResultOrNull();
 			TextView textViewUserName = findViewById(R.id.avatarTitle);
