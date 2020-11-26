@@ -6,13 +6,18 @@ import android.net.Uri;
 
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
+import org.briarproject.bramble.api.identity.AuthorId;
 import org.briarproject.bramble.api.identity.IdentityManager;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.briar.android.attachment.ImageCompressor;
 import org.briarproject.briar.android.attachment.ImageSizeCalculator;
+import org.briarproject.briar.android.contact.ContactItem;
 import org.briarproject.briar.android.viewmodel.LiveResult;
 import org.briarproject.briar.api.avatar.AvatarManager;
+import org.briarproject.briar.api.identity.AuthorInfo;
+import org.briarproject.briar.api.identity.AuthorManager;
+import org.briarproject.briar.api.media.AttachmentHeader;
 import org.jsoup.UnsupportedMimeTypeException;
 
 import java.io.IOException;
@@ -23,6 +28,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.MutableLiveData;
 
 import static java.util.Arrays.asList;
 import static java.util.logging.Logger.getLogger;
@@ -39,6 +45,7 @@ public class SettingsViewModel extends AndroidViewModel {
 	private final IdentityManager identityManager;
 	private final ImageSizeCalculator imageSizeCalculator;
 	private final AvatarManager avatarManager;
+	private final AuthorManager authorManager;
 	@DatabaseExecutor
 	private final Executor dbExecutor;
 
@@ -47,20 +54,37 @@ public class SettingsViewModel extends AndroidViewModel {
 			IdentityManager identityManager,
 			ImageSizeCalculator imageSizeCalculator,
 			AvatarManager avatarManager,
+			AuthorManager authorManager,
 			@DatabaseExecutor Executor dbExecutor) {
 		super(application);
 		this.identityManager = identityManager;
 		this.imageSizeCalculator = imageSizeCalculator;
 		this.avatarManager = avatarManager;
+		this.authorManager = authorManager;
 		this.dbExecutor = dbExecutor;
+		loadAuthorInfo();
 	}
 
-	LiveResult<LocalAuthor> getOurselves() {
+	private final MutableLiveData<AuthorInfo> authorInfo =
+			new MutableLiveData<>();
+	private final MutableLiveData<LocalAuthor> author = new MutableLiveData<>();
+
+	private void loadAuthorInfo() {
 		try {
-			return new LiveResult<>(identityManager.getLocalAuthor());
+			LocalAuthor localAuthor = identityManager.getLocalAuthor();
+			author.setValue(localAuthor);
+			authorInfo.setValue(authorManager.getMyAuthorInfo());
 		} catch (DbException e) {
-			return new LiveResult<>(e);
+			// TODO: log
 		}
+	}
+
+	MutableLiveData<LocalAuthor> getOurAuthor() {
+		return author;
+	}
+
+	MutableLiveData<AuthorInfo> getOurAuthorInfo() {
+		return authorInfo;
 	}
 
 	void setAvatar(ContentResolver contentResolver, Uri uri)
@@ -75,7 +99,8 @@ public class SettingsViewModel extends AndroidViewModel {
 		if (is == null) throw new IOException();
 		ImageCompressor imageCompressor =
 				new ImageCompressor(imageSizeCalculator);
-		is = imageCompressor.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
+		is = imageCompressor
+				.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
 		contentType = "image/jpeg";
 		avatarManager.addAvatar(contentType, is);
 	}

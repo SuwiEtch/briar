@@ -12,7 +12,8 @@ import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
 import org.briarproject.briar.android.activity.BriarActivity;
-import org.briarproject.briar.android.viewmodel.LiveResult;
+import org.briarproject.briar.android.view.AuthorView;
+import org.briarproject.briar.api.identity.AuthorInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +22,10 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import de.hdodenhof.circleimageview.CircleImageView;
-import im.delight.android.identicons.IdenticonDrawable;
 
 import static android.content.Intent.ACTION_GET_CONTENT;
 import static android.content.Intent.ACTION_OPEN_DOCUMENT;
@@ -57,21 +58,19 @@ public class SettingsActivity extends BriarActivity {
 				ViewModelProviders.of(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 
-		LiveResult<LocalAuthor> ourselves =
-				settingsViewModel.getOurselves();
+		MutableLiveData<LocalAuthor> ourselves =
+				settingsViewModel.getOurAuthor();
+		MutableLiveData<AuthorInfo> ourAuthorInfo =
+				settingsViewModel.getOurAuthorInfo();
 
-		if (ourselves.hasError()) {
-			// TODO: what are we going to do here?
-			supportFinishAfterTransition();
-		} else {
-			LocalAuthor us = ourselves.getResultOrNull();
-			TextView textViewUserName = findViewById(R.id.avatarTitle);
-			textViewUserName.setText(us.getName());
+		LocalAuthor us = ourselves.getValue();
 
-			CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
-			imageViewAvatar.setImageDrawable(
-					new IdenticonDrawable(us.getId().getBytes()));
-		}
+		TextView textViewUserName = findViewById(R.id.avatarTitle);
+		textViewUserName.setText(us.getName());
+
+		CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
+		AuthorView.setAvatar(imageViewAvatar, us.getId(),
+				ourAuthorInfo.getValue());
 
 		View avatarGroup = findViewById(R.id.avatarGroup);
 		avatarGroup.setOnClickListener(e -> {

@@ -15,7 +15,6 @@ import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
-import org.briarproject.briar.android.viewmodel.LiveResult;
 
 import java.io.IOException;
 
@@ -23,6 +22,7 @@ import javax.inject.Inject;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -82,15 +82,18 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		String argUri = requireNonNull(args.getString(ARG_URI));
 		uri = Uri.parse(argUri);
 
-		LiveResult<LocalAuthor> ourselves =
-				settingsViewModel.getOurselves();
-		if (ourselves.hasError()) {
-			Toast.makeText(getContext(), R.string.profile_picture_internal_error, LENGTH_LONG).show();
+		MutableLiveData<LocalAuthor> ourselves =
+				settingsViewModel.getOurAuthor();
+
+		if (ourselves.getValue() == null) {
+			Toast.makeText(getContext(),
+					R.string.profile_picture_internal_error, LENGTH_LONG)
+					.show();
 			// It's not exactly documented that it works to dismiss a dialog at this stage,
 			// but I also haven't been able to find a better way to do it.
 			dismiss();
 		} else {
-			LocalAuthor us = ourselves.getResultOrNull();
+			LocalAuthor us = ourselves.getValue();
 
 			TextView textViewUserName = view.findViewById(R.id.username);
 			textViewUserName.setText(us.getName());
@@ -108,7 +111,9 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 			ContentResolver contentResolver = getContext().getContentResolver();
 			settingsViewModel.setAvatar(contentResolver, uri);
 		} catch (IOException | DbException e) {
-			Toast.makeText(getActivity(), "An error occurred while setting the avatar image", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(),
+					"An error occurred while setting the avatar image",
+					Toast.LENGTH_SHORT).show();
 		}
 	}
 
