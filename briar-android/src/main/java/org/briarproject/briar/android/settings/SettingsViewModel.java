@@ -70,6 +70,10 @@ public class SettingsViewModel extends AndroidViewModel {
 		if (ourAuthorInfo.getValue() == null) loadAuthorInfo();
 	}
 
+	LiveData<LocalAuthorInfo> getOurAuthorInfo() {
+		return ourAuthorInfo;
+	}
+
 	private void loadAuthorInfo() {
 		dbExecutor.execute(() -> {
 			try {
@@ -84,21 +88,17 @@ public class SettingsViewModel extends AndroidViewModel {
 		});
 	}
 
-	LiveData<LocalAuthorInfo> getOurAuthorInfo() {
-		return ourAuthorInfo;
-	}
-
-	boolean setAvatar(Uri uri) {
-		try {
-			trySetAvatar(uri);
-			return true;
-		} catch (IOException | DbException e) {
-			return false;
-		}
+	void setAvatar(Uri uri) {
+		dbExecutor.execute(() -> {
+			try {
+				trySetAvatar(uri);
+			} catch (IOException | DbException e) {
+				LogUtils.logException(LOG, Level.WARNING, e);
+			}
+		});
 	}
 
 	private void trySetAvatar(Uri uri) throws IOException, DbException {
-		// TODO: move to IOExecutor
 		ContentResolver contentResolver =
 				getApplication().getContentResolver();
 		String contentType = contentResolver.getType(uri);
