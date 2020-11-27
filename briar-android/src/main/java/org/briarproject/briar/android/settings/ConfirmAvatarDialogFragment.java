@@ -21,6 +21,7 @@ import javax.inject.Inject;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -61,7 +62,9 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		settingsViewModel = provider.get(SettingsViewModel.class);
 		settingsViewModel.onCreate();
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		FragmentActivity activity = requireActivity();
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
 		LayoutInflater factory = LayoutInflater.from(getContext());
 		final View view =
@@ -80,7 +83,7 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		String argUri = requireNonNull(args.getString(ARG_URI));
 		uri = Uri.parse(argUri);
 
-		settingsViewModel.getOurAuthorInfo().observe(requireActivity(), us -> {
+		settingsViewModel.getOurAuthorInfo().observe(activity, us -> {
 			TextView textViewUserName = view.findViewById(R.id.username);
 			textViewUserName.setText(us.getLocalAuthor().getName());
 		});
