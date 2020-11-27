@@ -25,14 +25,14 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 
 	final static String TAG = ConfirmAvatarDialogFragment.class.getName();
 
-	private static final String ARG_URI = "uri";
-
 	@Inject
 	ViewModelProvider.Factory viewModelFactory;
-
 	private SettingsViewModel settingsViewModel;
 
-	public static ConfirmAvatarDialogFragment newInstance(Uri uri) {
+	private static final String ARG_URI = "uri";
+	private Uri uri;
+
+	static ConfirmAvatarDialogFragment newInstance(Uri uri) {
 		ConfirmAvatarDialogFragment f = new ConfirmAvatarDialogFragment();
 
 		Bundle args = new Bundle();
@@ -48,12 +48,15 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		((BaseActivity) requireActivity()).getActivityComponent().inject(this);
 	}
 
-	private Uri uri;
-
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		Bundle args = requireArguments();
+		String argUri = requireNonNull(args.getString(ARG_URI));
+		uri = Uri.parse(argUri);
+
 		FragmentActivity activity = requireActivity();
 
-		ViewModelProvider provider = new ViewModelProvider(activity, viewModelFactory);
+		ViewModelProvider provider =
+				new ViewModelProvider(activity, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 		settingsViewModel.onCreate();
 
@@ -72,18 +75,14 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 					trySetAvatar();
 				});
 
-		Bundle args = requireArguments();
-		String argUri = requireNonNull(args.getString(ARG_URI));
-		uri = Uri.parse(argUri);
+		ImageView imageView = view.findViewById(R.id.image);
+		imageView.setImageResource(R.drawable.contact_connected);
+		imageView.setImageURI(uri);
 
 		settingsViewModel.getOurAuthorInfo().observe(activity, us -> {
 			TextView textViewUserName = view.findViewById(R.id.username);
 			textViewUserName.setText(us.getLocalAuthor().getName());
 		});
-
-		ImageView imageView = view.findViewById(R.id.image);
-		imageView.setImageResource(R.drawable.contact_connected);
-		imageView.setImageURI(uri);
 
 		return builder.create();
 	}

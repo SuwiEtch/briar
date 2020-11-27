@@ -35,7 +35,6 @@ public class SettingsActivity extends BriarActivity {
 
 	@Inject
 	ViewModelProvider.Factory viewModelFactory;
-
 	private SettingsViewModel settingsViewModel;
 
 	@Override
