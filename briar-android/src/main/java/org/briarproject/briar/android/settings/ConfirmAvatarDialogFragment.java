@@ -95,9 +95,8 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 	}
 
 	private void trySetAvatar() {
-		try {
-			settingsViewModel.setAvatar(uri);
-		} catch (IOException | DbException e) {
+		boolean success = settingsViewModel.setAvatar(uri);
+		if (!success) {
 			Toast.makeText(getActivity(),
 					"An error occurred while setting the avatar image",
 					Toast.LENGTH_SHORT).show();

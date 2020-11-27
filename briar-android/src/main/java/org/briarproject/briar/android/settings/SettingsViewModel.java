@@ -88,8 +88,16 @@ public class SettingsViewModel extends AndroidViewModel {
 		return ourAuthorInfo;
 	}
 
-	void setAvatar(Uri uri)
-			throws IOException, DbException {
+	boolean setAvatar(Uri uri) {
+		try {
+			trySetAvatar(uri);
+			return true;
+		} catch (IOException | DbException e) {
+			return false;
+		}
+	}
+
+	private void trySetAvatar(Uri uri) throws IOException, DbException {
 		ContentResolver contentResolver =
 				getApplication().getContentResolver();
 		String contentType = contentResolver.getType(uri);
