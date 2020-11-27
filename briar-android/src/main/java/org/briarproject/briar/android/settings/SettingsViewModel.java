@@ -98,6 +98,8 @@ public class SettingsViewModel extends AndroidViewModel {
 	}
 
 	private void trySetAvatar(Uri uri) throws IOException, DbException {
+		// TODO: move to IOExecutor
+		// TODO: trigger update on ourAuthorInfo
 		ContentResolver contentResolver =
 				getApplication().getContentResolver();
 		String contentType = contentResolver.getType(uri);
