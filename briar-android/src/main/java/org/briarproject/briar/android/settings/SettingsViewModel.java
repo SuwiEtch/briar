@@ -11,7 +11,6 @@ import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.util.LogUtils;
 import org.briarproject.briar.android.attachment.ImageCompressor;
-import org.briarproject.briar.android.attachment.ImageSizeCalculator;
 import org.briarproject.briar.api.avatar.AvatarManager;
 import org.briarproject.briar.api.identity.AuthorInfo;
 import org.briarproject.briar.api.identity.AuthorManager;
@@ -42,9 +41,9 @@ public class SettingsViewModel extends AndroidViewModel {
 			getLogger(SettingsViewModel.class.getName());
 
 	private final IdentityManager identityManager;
-	private final ImageSizeCalculator imageSizeCalculator;
 	private final AvatarManager avatarManager;
 	private final AuthorManager authorManager;
+	private final ImageCompressor imageCompressor;
 	@DatabaseExecutor
 	private final Executor dbExecutor;
 
@@ -54,13 +53,13 @@ public class SettingsViewModel extends AndroidViewModel {
 	@Inject
 	SettingsViewModel(Application application,
 			IdentityManager identityManager,
-			ImageSizeCalculator imageSizeCalculator,
 			AvatarManager avatarManager,
 			AuthorManager authorManager,
+			ImageCompressor imageCompressor,
 			@DatabaseExecutor Executor dbExecutor) {
 		super(application);
 		this.identityManager = identityManager;
-		this.imageSizeCalculator = imageSizeCalculator;
+		this.imageCompressor = imageCompressor;
 		this.avatarManager = avatarManager;
 		this.authorManager = authorManager;
 		this.dbExecutor = dbExecutor;
@@ -109,8 +108,6 @@ public class SettingsViewModel extends AndroidViewModel {
 		}
 		InputStream is = contentResolver.openInputStream(uri);
 		if (is == null) throw new IOException();
-		ImageCompressor imageCompressor =
-				new ImageCompressor(imageSizeCalculator);
 		is = imageCompressor
 				.compressImage(is, contentType, MAX_ATTACHMENT_DIMENSION);
 		contentType = "image/jpeg";
