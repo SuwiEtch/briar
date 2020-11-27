@@ -76,7 +76,8 @@ public class SettingsViewModel extends AndroidViewModel {
 				LocalAuthor localAuthor = identityManager.getLocalAuthor();
 				AuthorInfo authorInfo = authorManager.getMyAuthorInfo();
 				ourAuthorInfo
-						.postValue(new LocalAuthorInfo(localAuthor, authorInfo));
+						.postValue(
+								new LocalAuthorInfo(localAuthor, authorInfo));
 			} catch (DbException e) {
 				LogUtils.logException(LOG, Level.WARNING, e);
 			}
@@ -87,8 +88,10 @@ public class SettingsViewModel extends AndroidViewModel {
 		return ourAuthorInfo;
 	}
 
-	void setAvatar(ContentResolver contentResolver, Uri uri)
+	void setAvatar(Uri uri)
 			throws IOException, DbException {
+		ContentResolver contentResolver =
+				getApplication().getContentResolver();
 		String contentType = contentResolver.getType(uri);
 		if (contentType == null) throw new IOException("null content type");
 		if (!asList(getSupportedImageContentTypes()).contains(contentType)) {

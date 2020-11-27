@@ -1,7 +1,6 @@
 package org.briarproject.briar.android.settings;
 
 import android.app.Dialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -97,8 +96,7 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 
 	private void trySetAvatar() {
 		try {
-			ContentResolver contentResolver = getContext().getContentResolver();
-			settingsViewModel.setAvatar(contentResolver, uri);
+			settingsViewModel.setAvatar(uri);
 		} catch (IOException | DbException e) {
 			Toast.makeText(getActivity(),
 					"An error occurred while setting the avatar image",
