@@ -6,28 +6,27 @@ import android.net.Uri;
 
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
-import org.briarproject.bramble.api.identity.AuthorId;
 import org.briarproject.bramble.api.identity.IdentityManager;
 import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
+import org.briarproject.bramble.util.LogUtils;
 import org.briarproject.briar.android.attachment.ImageCompressor;
 import org.briarproject.briar.android.attachment.ImageSizeCalculator;
-import org.briarproject.briar.android.contact.ContactItem;
-import org.briarproject.briar.android.viewmodel.LiveResult;
 import org.briarproject.briar.api.avatar.AvatarManager;
 import org.briarproject.briar.api.identity.AuthorInfo;
 import org.briarproject.briar.api.identity.AuthorManager;
-import org.briarproject.briar.api.media.AttachmentHeader;
 import org.jsoup.UnsupportedMimeTypeException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import static java.util.Arrays.asList;
@@ -49,6 +48,9 @@ public class SettingsViewModel extends AndroidViewModel {
 	@DatabaseExecutor
 	private final Executor dbExecutor;
 
+	private final MutableLiveData<LocalAuthorInfo> ourAuthorInfo =
+			new MutableLiveData<>();
+
 	@Inject
 	SettingsViewModel(Application application,
 			IdentityManager identityManager,
@@ -62,29 +64,27 @@ public class SettingsViewModel extends AndroidViewModel {
 		this.avatarManager = avatarManager;
 		this.authorManager = authorManager;
 		this.dbExecutor = dbExecutor;
-		loadAuthorInfo();
 	}
 
-	private final MutableLiveData<AuthorInfo> authorInfo =
-			new MutableLiveData<>();
-	private final MutableLiveData<LocalAuthor> author = new MutableLiveData<>();
+	void onCreate() {
+		if (ourAuthorInfo.getValue() == null) loadAuthorInfo();
+	}
 
 	private void loadAuthorInfo() {
-		try {
-			LocalAuthor localAuthor = identityManager.getLocalAuthor();
-			author.setValue(localAuthor);
-			authorInfo.setValue(authorManager.getMyAuthorInfo());
-		} catch (DbException e) {
-			// TODO: log
-		}
+		dbExecutor.execute(() -> {
+			try {
+				LocalAuthor localAuthor = identityManager.getLocalAuthor();
+				AuthorInfo authorInfo = authorManager.getMyAuthorInfo();
+				ourAuthorInfo
+						.postValue(new LocalAuthorInfo(localAuthor, authorInfo));
+			} catch (DbException e) {
+				LogUtils.logException(LOG, Level.WARNING, e);
+			}
+		});
 	}
 
-	MutableLiveData<LocalAuthor> getOurAuthor() {
-		return author;
-	}
-
-	MutableLiveData<AuthorInfo> getOurAuthorInfo() {
-		return authorInfo;
+	LiveData<LocalAuthorInfo> getOurAuthorInfo() {
+		return ourAuthorInfo;
 	}
 
 	void setAvatar(ContentResolver contentResolver, Uri uri)

@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.briarproject.bramble.api.db.DbException;
-import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
 
@@ -22,11 +21,9 @@ import javax.inject.Inject;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import static android.widget.Toast.LENGTH_LONG;
 import static java.util.Objects.requireNonNull;
 
 public class ConfirmAvatarDialogFragment extends DialogFragment {
@@ -62,6 +59,7 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		ViewModelProvider provider =
 				ViewModelProviders.of(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
+		settingsViewModel.onCreate();
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
@@ -82,22 +80,10 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 		String argUri = requireNonNull(args.getString(ARG_URI));
 		uri = Uri.parse(argUri);
 
-		MutableLiveData<LocalAuthor> ourselves =
-				settingsViewModel.getOurAuthor();
-
-		if (ourselves.getValue() == null) {
-			Toast.makeText(getContext(),
-					R.string.profile_picture_internal_error, LENGTH_LONG)
-					.show();
-			// It's not exactly documented that it works to dismiss a dialog at this stage,
-			// but I also haven't been able to find a better way to do it.
-			dismiss();
-		} else {
-			LocalAuthor us = ourselves.getValue();
-
+		settingsViewModel.getOurAuthorInfo().observe(requireActivity(), us -> {
 			TextView textViewUserName = view.findViewById(R.id.username);
-			textViewUserName.setText(us.getName());
-		}
+			textViewUserName.setText(us.getLocalAuthor().getName());
+		});
 
 		ImageView imageView = view.findViewById(R.id.image);
 		imageView.setImageResource(R.drawable.contact_connected);

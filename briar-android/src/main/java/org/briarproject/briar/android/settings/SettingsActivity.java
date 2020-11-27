@@ -8,12 +8,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import org.briarproject.bramble.api.identity.LocalAuthor;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
 import org.briarproject.briar.android.activity.BriarActivity;
 import org.briarproject.briar.android.view.AuthorView;
-import org.briarproject.briar.api.identity.AuthorInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +20,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -57,20 +55,16 @@ public class SettingsActivity extends BriarActivity {
 		ViewModelProvider provider =
 				ViewModelProviders.of(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
+		settingsViewModel.onCreate();
 
-		MutableLiveData<LocalAuthor> ourselves =
-				settingsViewModel.getOurAuthor();
-		MutableLiveData<AuthorInfo> ourAuthorInfo =
-				settingsViewModel.getOurAuthorInfo();
+		settingsViewModel.getOurAuthorInfo().observe(this, us -> {
+			TextView textViewUserName = findViewById(R.id.avatarTitle);
+			textViewUserName.setText(us.getLocalAuthor().getName());
 
-		LocalAuthor us = ourselves.getValue();
-
-		TextView textViewUserName = findViewById(R.id.avatarTitle);
-		textViewUserName.setText(us.getName());
-
-		CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
-		AuthorView.setAvatar(imageViewAvatar, us.getId(),
-				ourAuthorInfo.getValue());
+			CircleImageView imageViewAvatar = findViewById(R.id.avatarImage);
+			AuthorView.setAvatar(imageViewAvatar, us.getLocalAuthor().getId(),
+					us.getAuthorInfo());
+		});
 
 		View avatarGroup = findViewById(R.id.avatarGroup);
 		avatarGroup.setOnClickListener(e -> {
