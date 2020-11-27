@@ -20,9 +20,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.content.Intent.ACTION_GET_CONTENT;
@@ -53,7 +51,7 @@ public class SettingsActivity extends BriarActivity {
 		setContentView(R.layout.activity_settings);
 
 		ViewModelProvider provider =
-				ViewModelProviders.of(this, viewModelFactory);
+				new ViewModelProvider(this, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 		settingsViewModel.onCreate();
 

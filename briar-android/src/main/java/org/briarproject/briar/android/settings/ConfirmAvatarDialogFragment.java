@@ -8,13 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.BaseActivity;
-
-import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -22,7 +18,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 
 import static java.util.Objects.requireNonNull;
 
@@ -58,8 +53,7 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		FragmentActivity activity = requireActivity();
 
-		ViewModelProvider provider =
-				ViewModelProviders.of(activity, viewModelFactory);
+		ViewModelProvider provider = new ViewModelProvider(activity, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 		settingsViewModel.onCreate();
 
