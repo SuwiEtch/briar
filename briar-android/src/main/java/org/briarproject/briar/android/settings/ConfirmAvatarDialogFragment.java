@@ -56,12 +56,12 @@ public class ConfirmAvatarDialogFragment extends DialogFragment {
 	private Uri uri;
 
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		FragmentActivity activity = requireActivity();
+
 		ViewModelProvider provider =
-				ViewModelProviders.of(this, viewModelFactory);
+				ViewModelProviders.of(activity, viewModelFactory);
 		settingsViewModel = provider.get(SettingsViewModel.class);
 		settingsViewModel.onCreate();
-
-		FragmentActivity activity = requireActivity();
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
