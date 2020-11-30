@@ -31,11 +31,13 @@ import org.briarproject.briar.android.account.LockManagerImpl;
 import org.briarproject.briar.android.keyagreement.ContactExchangeModule;
 import org.briarproject.briar.android.login.LoginModule;
 import org.briarproject.briar.android.navdrawer.NavDrawerModule;
+import org.briarproject.briar.android.test.TestAvatarCreatorImpl;
 import org.briarproject.briar.android.viewmodel.ViewModelModule;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.android.DozeWatchdog;
 import org.briarproject.briar.api.android.LockManager;
 import org.briarproject.briar.api.android.ScreenFilterMonitor;
+import org.briarproject.briar.api.test.TestAvatarCreator;
 
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -173,6 +175,11 @@ public class AppModule {
 			}
 		};
 		return devConfig;
+	}
+
+	@Provides
+	TestAvatarCreator provideTestAvatarCreator() {
+		return new TestAvatarCreatorImpl();
 	}
 
 	@Provides
