@@ -39,6 +39,7 @@ import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.android.DozeWatchdog;
 import org.briarproject.briar.api.android.LockManager;
 import org.briarproject.briar.api.android.ScreenFilterMonitor;
+import org.briarproject.briar.api.autodelete.AutoDeleteManager;
 import org.briarproject.briar.api.blog.BlogManager;
 import org.briarproject.briar.api.blog.BlogPostFactory;
 import org.briarproject.briar.api.blog.BlogSharingManager;
@@ -170,6 +171,8 @@ public interface AndroidComponent
 	FeatureFlags featureFlags();
 
 	AndroidWakeLockManager wakeLockManager();
+
+	AutoDeleteManager autoDeleteManager();
 
 	void inject(SignInReminderReceiver briarService);
 
