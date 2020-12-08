@@ -24,6 +24,14 @@ public class ContactListItem extends ContactItem {
 		this.timestamp = count.getLatestMsgTime();
 	}
 
+	public ContactListItem(Contact contact, AuthorInfo authorInfo,
+			boolean connected, boolean empty, int unread, long timestamp) {
+		super(contact, authorInfo, connected);
+		this.empty = empty;
+		this.unread = unread;
+		this.timestamp = timestamp;
+	}
+
 	void addMessage(ConversationMessageHeader h) {
 		empty = false;
 		if (h.getTimestamp() > timestamp) timestamp = h.getTimestamp();

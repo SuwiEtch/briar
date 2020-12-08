@@ -38,6 +38,7 @@ import org.briarproject.briar.android.keyagreement.ContactExchangeActivity;
 import org.briarproject.briar.android.util.BriarSnackbarBuilder;
 import org.briarproject.briar.android.view.BriarRecyclerView;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
+import org.briarproject.briar.api.avatar.event.AvatarUpdatedEvent;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
@@ -63,6 +64,7 @@ import io.github.kobakei.materialfabspeeddial.FabSpeedDial.OnMenuItemClickListen
 import static android.os.Build.VERSION.SDK_INT;
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 import static androidx.core.view.ViewCompat.getTransitionName;
+import static androidx.recyclerview.widget.SortedList.INVALID_POSITION;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
 import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
@@ -286,7 +288,39 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 			checkForPendingContacts();
+		} else if (e instanceof AvatarUpdatedEvent) {
+			AvatarUpdatedEvent a = (AvatarUpdatedEvent) e;
+			updateAvatar(a);
 		}
+	}
+
+	@UiThread
+	private void updateAvatar(AvatarUpdatedEvent a) {
+		ContactId contactId = a.getContactId();
+		int position = adapter.findItemPosition(contactId);
+		if (position == INVALID_POSITION) {
+			return;
+		}
+		ContactListItem oldItem = adapter.getItemAt(position);
+		// Better checking for the received contact id again here, I assume that
+		// between obtaining the oldItem position and retrieving the actual oldItem
+		// another event could have inserted another oldItem in between making the
+		// positional effectively invalid.
+		if (!oldItem.getContact().getId().equals(contactId)) {
+			return;
+		}
+		AuthorInfo oldAuthorInfo = oldItem.getAuthorInfo();
+		AuthorInfo newAuthorInfo = new AuthorInfo(oldAuthorInfo.getStatus(),
+				oldAuthorInfo.getAlias(), a.getAttachmentHeader());
+		ContactListItem newItem = new ContactListItem(oldItem.getContact(),
+				newAuthorInfo, oldItem.isConnected(), oldItem.isEmpty(),
+				oldItem.getUnreadCount(), oldItem.getTimestamp());
+		// We can just add the item. It will replace the old item in the adapter
+		// because BaseContactListAdapter#areItemsTheSame() will return true
+		// for the old and the new item as parameters.
+		// ContactListAdapter#areContentsTheSame() does return false though, so
+		// that the list gets updated.
+		adapter.add(newItem);
 	}
 
 	@UiThread
