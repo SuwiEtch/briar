@@ -72,6 +72,7 @@ import static android.provider.Settings.EXTRA_CHANNEL_ID;
 import static android.provider.Settings.System.DEFAULT_NOTIFICATION_URI;
 import static android.widget.Toast.LENGTH_SHORT;
 import static androidx.core.view.ViewCompat.LAYOUT_DIRECTION_LTR;
+import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.api.plugin.Plugin.PREF_PLUGIN_ENABLE;
@@ -245,17 +246,15 @@ public class SettingsFragment extends PreferenceFragmentCompat
 			values.remove(getString(R.string.pref_theme_system_value));
 			theme.setEntryValues(values.toArray(new CharSequence[0]));
 		}
+		Preference explode = requireNonNull(findPreference("pref_key_explode"));
 		if (IS_DEBUG_BUILD) {
-			findPreference("pref_key_explode").setOnPreferenceClickListener(
-					preference -> {
-						throw new RuntimeException("Boom!");
-					}
-			);
+			explode.setOnPreferenceClickListener(preference -> {
+				throw new RuntimeException("Boom!");
+			});
 		} else {
-			findPreference("pref_key_explode").setVisible(false);
+			explode.setVisible(false);
 			findPreference("pref_key_test_data").setVisible(false);
-			PreferenceGroup testing =
-					findPreference("pref_key_explode").getParent();
+			PreferenceGroup testing = explode.getParent();
 			if (testing == null) throw new AssertionError();
 			testing.setVisible(false);
 		}

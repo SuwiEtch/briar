@@ -1,13 +1,15 @@
 package org.briarproject.briar.android.reporting;
 
 import android.content.Context;
+import android.util.Log;
 
-import org.acra.collector.CrashReportData;
+import org.acra.data.CrashReportData;
 import org.acra.sender.ReportSender;
 import org.acra.sender.ReportSenderException;
 import org.briarproject.bramble.api.reporting.DevReporter;
 import org.briarproject.bramble.util.AndroidUtils;
 import org.briarproject.briar.android.AndroidComponent;
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,12 +36,14 @@ public class BriarReportSender implements ReportSender {
 			@NonNull CrashReportData errorContent)
 			throws ReportSenderException {
 		component.inject(this);
-		String crashReport = errorContent.toJSON().toString();
 		try {
+			String crashReport = errorContent.toJSON();
 			File reportDir = AndroidUtils.getReportDir(ctx);
-			String reportId = errorContent.getProperty(REPORT_ID);
+			String reportId = errorContent.getString(REPORT_ID);
+			Log.e("TEST", "id: " + reportId);
+			Log.e("TEST", "crashReport: " + crashReport);
 			reporter.encryptReportToFile(reportDir, reportId, crashReport);
-		} catch (FileNotFoundException e) {
+		} catch (FileNotFoundException | JSONException e) {
 			throw new ReportSenderException("Failed to encrypt report", e);
 		}
 	}

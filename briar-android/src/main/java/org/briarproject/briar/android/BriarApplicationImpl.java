@@ -15,8 +15,8 @@ import com.vanniktech.emoji.EmojiManager;
 import com.vanniktech.emoji.google.GoogleEmojiProvider;
 
 import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
+import org.acra.annotation.AcraCore;
+import org.acra.annotation.AcraDialog;
 import org.briarproject.bramble.BrambleAndroidEagerSingletons;
 import org.briarproject.bramble.BrambleAppComponent;
 import org.briarproject.bramble.BrambleCoreEagerSingletons;
@@ -24,7 +24,6 @@ import org.briarproject.briar.BriarCoreEagerSingletons;
 import org.briarproject.briar.BuildConfig;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.logging.CachingLogHandler;
-import org.briarproject.briar.android.reporting.BriarReportPrimer;
 import org.briarproject.briar.android.reporting.BriarReportSenderFactory;
 import org.briarproject.briar.android.reporting.DevReportActivity;
 import org.briarproject.briar.android.util.UiUtils;
@@ -33,6 +32,8 @@ import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import androidx.annotation.NonNull;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static java.util.logging.Level.FINE;
@@ -57,16 +58,13 @@ import static org.acra.ReportField.USER_APP_START_DATE;
 import static org.acra.ReportField.USER_CRASH_DATE;
 import static org.briarproject.briar.android.TestingConstants.IS_DEBUG_BUILD;
 
-@ReportsCrashes(
-		reportPrimerClass = BriarReportPrimer.class,
+@AcraCore(
 		logcatArguments = {"-d", "-v", "time", "*:I"},
 		reportSenderFactoryClasses = {BriarReportSenderFactory.class},
-		mode = ReportingInteractionMode.DIALOG,
-		reportDialogClass = DevReportActivity.class,
-		resDialogOkToast = R.string.dev_report_saved,
+		resReportSendSuccessToast = R.string.dev_report_saved,
 		deleteOldUnsentReportsOnApplicationStart = false,
 		buildConfigClass = BuildConfig.class,
-		customReportContent = {
+		reportContent = {
 				REPORT_ID,
 				APP_VERSION_CODE, APP_VERSION_NAME, PACKAGE_NAME,
 				PHONE_MODEL, ANDROID_VERSION, BRAND, PRODUCT,
@@ -76,8 +74,11 @@ import static org.briarproject.briar.android.TestingConstants.IS_DEBUG_BUILD;
 				INITIAL_CONFIGURATION, CRASH_CONFIGURATION,
 				DISPLAY, DEVICE_FEATURES,
 				USER_APP_START_DATE, USER_CRASH_DATE
-		}
+		},
+		stopServicesOnCrash = true,
+		includeDropBoxSystemTags = true
 )
+@AcraDialog(reportDialogClass = DevReportActivity.class)
 public class BriarApplicationImpl extends Application
 		implements BriarApplication {
 
@@ -144,7 +145,7 @@ public class BriarApplicationImpl extends Application
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		Localizer.getInstance().setLocale(this);
 	}

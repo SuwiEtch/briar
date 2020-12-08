@@ -16,14 +16,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.acra.ReportField;
-import org.acra.collector.CrashReportData;
+import org.acra.data.CrashReportData;
 import org.acra.file.CrashReportPersister;
-import org.acra.model.Element;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,21 +34,21 @@ import java.util.logging.Logger;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
-import static org.acra.ACRAConstants.EXTRA_REPORT_FILE;
 import static org.acra.ReportField.ANDROID_VERSION;
 import static org.acra.ReportField.APP_VERSION_CODE;
 import static org.acra.ReportField.APP_VERSION_NAME;
 import static org.acra.ReportField.PACKAGE_NAME;
 import static org.acra.ReportField.REPORT_ID;
 import static org.acra.ReportField.STACK_TRACE;
+import static org.briarproject.bramble.util.LogUtils.logException;
 
 @MethodsNotNullByDefault
 @ParametersNotNullByDefault
@@ -59,17 +58,19 @@ public class ReportFormFragment extends Fragment
 	private static final Logger LOG =
 			getLogger(ReportFormFragment.class.getName());
 	private static final String IS_FEEDBACK = "isFeedback";
-	private static final Set<ReportField> requiredFields = new HashSet<>();
-	private static final Set<ReportField> excludedFields = new HashSet<>();
+	private static final Set<String> requiredFields = new HashSet<>();
+	private static final Set<String> excludedFields = new HashSet<>();
+
 	static {
-		requiredFields.add(REPORT_ID);
-		requiredFields.add(APP_VERSION_CODE);
-		requiredFields.add(APP_VERSION_NAME);
-		requiredFields.add(PACKAGE_NAME);
-		requiredFields.add(ANDROID_VERSION);
-		requiredFields.add(STACK_TRACE);
+		requiredFields.add(REPORT_ID.name());
+		requiredFields.add(APP_VERSION_CODE.name());
+		requiredFields.add(APP_VERSION_NAME.name());
+		requiredFields.add(PACKAGE_NAME.name());
+		requiredFields.add(ANDROID_VERSION.name());
+		requiredFields.add(STACK_TRACE.name());
 	}
 
+	private ReportViewModel viewModel;
 	private boolean isFeedback;
 	private File reportFile;
 
@@ -82,12 +83,10 @@ public class ReportFormFragment extends Fragment
 	@Nullable
 	private MenuItem sendReport;
 
-	static ReportFormFragment newInstance(boolean isFeedback,
-			File reportFile) {
+	static ReportFormFragment newInstance(boolean isFeedback) {
 		ReportFormFragment f = new ReportFormFragment();
 		Bundle args = new Bundle();
 		args.putBoolean(IS_FEEDBACK, isFeedback);
-		args.putSerializable(EXTRA_REPORT_FILE, reportFile);
 		f.setArguments(args);
 		return f;
 	}
@@ -96,6 +95,9 @@ public class ReportFormFragment extends Fragment
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+		viewModel = new ViewModelProvider(requireActivity())
+				.get(ReportViewModel.class);
+		reportFile = viewModel.getReportFile();
 	}
 
 	@Nullable
@@ -115,8 +117,6 @@ public class ReportFormFragment extends Fragment
 
 		Bundle args = requireArguments();
 		isFeedback = args.getBoolean(IS_FEEDBACK);
-		reportFile =
-				(File) requireNonNull(args.getSerializable(EXTRA_REPORT_FILE));
 
 		if (isFeedback) {
 			includeDebugReport
@@ -151,8 +151,6 @@ public class ReportFormFragment extends Fragment
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.dev_report_actions, menu);
 		sendReport = menu.findItem(R.id.action_send_report);
-		// calling setShowAsAction() shouldn't be needed, but for some reason is
-		sendReport.setShowAsAction(SHOW_AS_ACTION_ALWAYS);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -167,7 +165,7 @@ public class ReportFormFragment extends Fragment
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		ReportField field = (ReportField) buttonView.getTag();
+		String field = (String) buttonView.getTag();
 		if (field != null) {
 			if (isChecked) excludedFields.remove(field);
 			else excludedFields.add(field);
@@ -178,56 +176,63 @@ public class ReportFormFragment extends Fragment
 		report.setVisibility(INVISIBLE);
 		progress.setVisibility(VISIBLE);
 		report.removeAllViews();
-		new AsyncTask<Void, Void, CrashReportData>() {
 
-			@Override
-			protected CrashReportData doInBackground(Void... args) {
-				CrashReportPersister persister = new CrashReportPersister();
-				try {
-					return persister.load(reportFile);
-				} catch (IOException | JSONException e) {
-					LOG.log(WARNING, "Could not load report file", e);
-					return null;
-				}
-			}
-
-			@Override
-			protected void onPostExecute(CrashReportData crashData) {
-				LayoutInflater inflater = getLayoutInflater();
-				if (crashData != null) {
-					for (Map.Entry<ReportField, Element> e : crashData
-							.entrySet()) {
-						ReportField field = e.getKey();
-						StringBuilder valueBuilder = new StringBuilder();
-						for (String pair : e.getValue().flatten()) {
-							valueBuilder.append(pair).append("\n");
-						}
-						String value = valueBuilder.toString();
-						boolean required = requiredFields.contains(field);
-						boolean excluded = excludedFields.contains(field);
-						View v = inflater.inflate(R.layout.list_item_crash,
-								report, false);
-						CheckBox cb = v.findViewById(R.id.include_in_report);
-						cb.setTag(field);
-						cb.setChecked(required || !excluded);
-						cb.setEnabled(!required);
-						cb.setOnCheckedChangeListener(ReportFormFragment.this);
-						cb.setText(field.toString());
-						TextView content = v.findViewById(R.id.content);
-						content.setText(value);
-						report.addView(v);
-					}
+		LayoutInflater inflater = getLayoutInflater();
+		CrashReportData crashData = viewModel.getCrashReportData().getValue();
+		if (crashData != null) {
+			for (Map.Entry<String, Object> e : crashData.toMap()
+					.entrySet()) {
+				String field = e.getKey();
+				StringBuilder valueBuilder = new StringBuilder();
+				if (e.getValue() instanceof JSONObject) {
+					JSONObject json = (JSONObject) e.getValue();
+					formatJSONObject(valueBuilder, json, "");
 				} else {
-					View v = inflater.inflate(
-							android.R.layout.simple_list_item_1, report, false);
-					TextView error = v.findViewById(android.R.id.text1);
-					error.setText(R.string.could_not_load_report_data);
-					report.addView(v);
+					valueBuilder.append(e.getValue()).append("\n");
 				}
-				report.setVisibility(VISIBLE);
-				progress.setVisibility(GONE);
+				String value = valueBuilder.toString();
+				boolean required = requiredFields.contains(field);
+				boolean excluded = excludedFields.contains(field);
+				View v = inflater.inflate(R.layout.list_item_crash,
+						report, false);
+				CheckBox cb = v.findViewById(R.id.include_in_report);
+				cb.setTag(field);
+				cb.setChecked(required || !excluded);
+				cb.setEnabled(!required);
+				cb.setOnCheckedChangeListener(this);
+				cb.setText(field);
+				TextView content = v.findViewById(R.id.content);
+				content.setText(value);
+				report.addView(v);
 			}
-		}.execute();
+		} else {
+			View v = inflater.inflate(
+					android.R.layout.simple_list_item_1, report, false);
+			TextView error = v.findViewById(android.R.id.text1);
+			error.setText(R.string.could_not_load_report_data);
+			report.addView(v);
+		}
+		report.setVisibility(VISIBLE);
+		progress.setVisibility(GONE);
+	}
+
+	private void formatJSONObject(StringBuilder sb, JSONObject json,
+			String prefix) {
+		for (Iterator<String> it = json.keys(); it.hasNext(); ) {
+			String key = it.next();
+			sb.append(prefix).append(key).append("=");
+			try {
+				if (json.get(key) instanceof JSONObject) {
+					formatJSONObject(sb, json.getJSONObject(key), key + ".");
+				} else {
+					sb.append(json.get(key));
+				}
+			} catch (JSONException e) {
+				logException(LOG, WARNING, e);
+				sb.append(e);
+			}
+			sb.append("\n");
+		}
 	}
 
 	private void processReport() {
@@ -244,19 +249,19 @@ public class ReportFormFragment extends Fragment
 				try {
 					CrashReportData data = persister.load(reportFile);
 					if (includeReport) {
-						for (ReportField field : excludedFields) {
-							LOG.info("Removing field " + field.name());
-							data.remove(field);
+						for (String field : excludedFields) {
+							LOG.info("Removing field " + field);
+//							data.remove(field);
 						}
 					} else {
-						Iterator<Map.Entry<ReportField, Element>> iter =
-								data.entrySet().iterator();
-						while (iter.hasNext()) {
-							Map.Entry<ReportField, Element> e = iter.next();
-							if (!requiredFields.contains(e.getKey())) {
-								iter.remove();
-							}
-						}
+//						Iterator<Map.Entry<ReportField, Element>> iter =
+//								data.entrySet().iterator();
+//						while (iter.hasNext()) {
+//							Map.Entry<ReportField, Element> e = iter.next();
+//							if (!requiredFields.contains(e.getKey())) {
+//								iter.remove();
+//							}
+//						}
 					}
 					persister.store(data, reportFile);
 					return true;
@@ -277,7 +282,7 @@ public class ReportFormFragment extends Fragment
 					if (userEmailView != null) {
 						email = userEmailView.getText().toString();
 					}
-					getDevReportActivity().sendCrashReport(comment, email);
+					viewModel.sendCrashReport(comment, email);
 				}
 				if (getActivity() != null) getDevReportActivity().exit();
 			}

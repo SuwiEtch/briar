@@ -1,5 +1,6 @@
 package org.briarproject.briar.android.reporting;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -11,12 +12,18 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.auto.service.AutoService;
+
 import org.acra.builder.ReportBuilder;
-import org.acra.builder.ReportPrimer;
+import org.acra.collector.Collector;
+import org.acra.config.CoreConfiguration;
+import org.acra.data.CrashReportData;
 import org.briarproject.bramble.api.Pair;
 import org.briarproject.briar.BuildConfig;
 import org.briarproject.briar.android.BriarApplication;
 import org.briarproject.briar.android.logging.BriefLogFormatter;
+import org.briarproject.briar.android.util.UserFeedback;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -44,24 +51,33 @@ import static android.net.ConnectivityManager.TYPE_WIFI;
 import static android.net.wifi.WifiManager.WIFI_STATE_ENABLED;
 import static android.os.Build.VERSION.SDK_INT;
 import static java.util.Collections.unmodifiableMap;
+import static org.acra.ReportField.CUSTOM_DATA;
 import static org.briarproject.bramble.util.AndroidUtils.getBluetoothAddressAndMethod;
 import static org.briarproject.bramble.util.PrivacyUtils.scrubInetAddress;
 import static org.briarproject.bramble.util.PrivacyUtils.scrubMacAddress;
 import static org.briarproject.bramble.util.StringUtils.isNullOrEmpty;
 
-public class BriarReportPrimer implements ReportPrimer {
+@AutoService(Collector.class)
+public class BriarReportCollector implements Collector {
+
+	public static final String IS_FEEDBACK = "IS_FEEDBACK";
 
 	@Override
-	public void primeReport(@NonNull Context ctx,
-			@NonNull ReportBuilder builder) {
+	public void collect(@NonNull Context ctx,
+			@NonNull CoreConfiguration config,
+			@NonNull ReportBuilder builder,
+			@NonNull CrashReportData crashReportData) {
+		boolean isFeedback = builder.getException() instanceof UserFeedback;
+		crashReportData.put(IS_FEEDBACK, isFeedback);
+
 		CustomDataTask task = new CustomDataTask(ctx);
 		FutureTask<Map<String, String>> futureTask = new FutureTask<>(task);
 		// Use a new thread as the Android executor thread may have died
 		new SingleShotAndroidExecutor(futureTask).start();
 		try {
-			builder.customData(futureTask.get());
+			crashReportData.put(CUSTOM_DATA, new JSONObject(futureTask.get()));
 		} catch (InterruptedException | ExecutionException e) {
-			builder.customData("Custom data exception", e.toString());
+			crashReportData.put(CUSTOM_DATA, "Custom data exception:\n" + e);
 		}
 	}
 
@@ -76,6 +92,7 @@ public class BriarReportPrimer implements ReportPrimer {
 
 		@Override
 		public Map<String, String> call() {
+			// TODO return JSONObject right away?
 			Map<String, String> customData = new LinkedHashMap<>();
 
 			// Log
@@ -208,6 +225,7 @@ public class BriarReportPrimer implements ReportPrimer {
 				customData.put("Bluetooth status", "Not available");
 			} else {
 				// Is Bluetooth enabled?
+				@SuppressLint("HardwareIds")
 				boolean btEnabled = bt.isEnabled()
 						&& !isNullOrEmpty(bt.getAddress());
 				// Is Bluetooth connectable?
