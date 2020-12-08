@@ -6,6 +6,8 @@ import android.view.View;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.briar.android.util.BriarAdapter;
 
+import java.util.NoSuchElementException;
+
 import javax.annotation.Nullable;
 
 import androidx.annotation.NonNull;
@@ -54,6 +56,15 @@ public abstract class BaseContactListAdapter<I extends ContactItem, VH extends C
 				return i;
 		}
 		return INVALID_POSITION; // Not found
+	}
+
+	I findItem(ContactId c) throws NoSuchElementException {
+		for (int i = 0; i < getItemCount(); i++) {
+			I item = getItemAt(i);
+			if (item != null && item.getContact().getId().equals(c))
+				return item;
+		}
+		throw new NoSuchElementException();
 	}
 
 	public interface OnContactClickListener<I> {

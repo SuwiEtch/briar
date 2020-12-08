@@ -48,6 +48,7 @@ import org.briarproject.briar.api.identity.AuthorManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -64,7 +65,6 @@ import io.github.kobakei.materialfabspeeddial.FabSpeedDial.OnMenuItemClickListen
 import static android.os.Build.VERSION.SDK_INT;
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 import static androidx.core.view.ViewCompat.getTransitionName;
-import static androidx.recyclerview.widget.SortedList.INVALID_POSITION;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
 import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
@@ -297,18 +297,16 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 	@UiThread
 	private void updateAvatar(AvatarUpdatedEvent a) {
 		ContactId contactId = a.getContactId();
-		int position = adapter.findItemPosition(contactId);
-		if (position == INVALID_POSITION) {
-			return;
+		try {
+			ContactListItem oldItem = adapter.findItem(contactId);
+			updateAvatar(oldItem, a);
+		} catch (NoSuchElementException e) {
+			LOG.warning("Received avatar for contact not in list");
 		}
-		ContactListItem oldItem = adapter.getItemAt(position);
-		// Better checking for the received contact id again here, I assume that
-		// between obtaining the oldItem position and retrieving the actual oldItem
-		// another event could have inserted another oldItem in between making the
-		// positional effectively invalid.
-		if (!oldItem.getContact().getId().equals(contactId)) {
-			return;
-		}
+	}
+
+	@UiThread
+	private void updateAvatar(ContactListItem oldItem, AvatarUpdatedEvent a) {
 		AuthorInfo oldAuthorInfo = oldItem.getAuthorInfo();
 		AuthorInfo newAuthorInfo = new AuthorInfo(oldAuthorInfo.getStatus(),
 				oldAuthorInfo.getAlias(), a.getAttachmentHeader());
