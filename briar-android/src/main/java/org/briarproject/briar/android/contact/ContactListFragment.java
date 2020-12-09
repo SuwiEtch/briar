@@ -318,6 +318,7 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 		// for the old and the new item as parameters.
 		// ContactListAdapter#areContentsTheSame() does return false though, so
 		// that the list gets updated.
+		adapter.incrementRevision();
 		adapter.add(newItem);
 	}
 
