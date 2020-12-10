@@ -48,7 +48,6 @@ import org.briarproject.briar.api.identity.AuthorManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -297,29 +296,19 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 	@UiThread
 	private void updateAvatar(AvatarUpdatedEvent a) {
 		ContactId contactId = a.getContactId();
-		try {
-			ContactListItem oldItem = adapter.findItem(contactId);
-			updateAvatar(oldItem, a);
-		} catch (NoSuchElementException e) {
-			LOG.warning("Received avatar for contact not in list");
-		}
-	}
 
-	@UiThread
-	private void updateAvatar(ContactListItem oldItem, AvatarUpdatedEvent a) {
+		int position = adapter.findItemPosition(contactId);
+		ContactListItem oldItem = adapter.getItemAt(position);
+
 		AuthorInfo oldAuthorInfo = oldItem.getAuthorInfo();
 		AuthorInfo newAuthorInfo = new AuthorInfo(oldAuthorInfo.getStatus(),
 				oldAuthorInfo.getAlias(), a.getAttachmentHeader());
 		ContactListItem newItem = new ContactListItem(oldItem.getContact(),
 				newAuthorInfo, oldItem.isConnected(), oldItem.isEmpty(),
 				oldItem.getUnreadCount(), oldItem.getTimestamp());
-		// We can just add the item. It will replace the old item in the adapter
-		// because BaseContactListAdapter#areItemsTheSame() will return true
-		// for the old and the new item as parameters.
-		// ContactListAdapter#areContentsTheSame() does return false though, so
-		// that the list gets updated.
+
 		adapter.incrementRevision();
-		adapter.add(newItem);
+		adapter.updateItemAt(position, newItem);
 	}
 
 	@UiThread
