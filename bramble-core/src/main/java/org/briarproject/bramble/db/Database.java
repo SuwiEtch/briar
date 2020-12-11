@@ -498,6 +498,12 @@ interface Database<T> {
 	Collection<MessageId> getMessagesToShare(T txn) throws DbException;
 
 	/**
+	 * Returns the IDs of any messages of any messages that are due for
+	 * auto-deletion, along with their group IDs.
+	 */
+	Map<MessageId, GroupId> getMessagesToDelete(T txn) throws DbException;
+
+	/**
 	 * Returns the next time (in milliseconds since the Unix epoch) when a
 	 * message is due to be sent to the given contact. The returned value may
 	 * be zero if a message is due to be sent immediately, or Long.MAX_VALUE
@@ -606,8 +612,10 @@ interface Database<T> {
 
 	/**
 	 * Marks a message as having been seen by the given contact.
+	 *
+	 * @return True if the message was not already marked as seen.
 	 */
-	void raiseSeenFlag(T txn, ContactId c, MessageId m) throws DbException;
+	boolean raiseSeenFlag(T txn, ContactId c, MessageId m) throws DbException;
 
 	/**
 	 * Removes a contact from the database.
@@ -672,6 +680,12 @@ interface Database<T> {
 	void resetExpiryTime(T txn, ContactId c, MessageId m) throws DbException;
 
 	/**
+	 * Sets the auto-delete timer duration for the given message.
+	 */
+	void setAutoDeleteDuration(T txn, MessageId m, long autoDeleteTimer)
+			throws DbException;
+
+	/**
 	 * Marks the given contact as verified.
 	 */
 	void setContactVerified(T txn, ContactId c) throws DbException;
@@ -729,6 +743,11 @@ interface Database<T> {
 	 */
 	void setTransportKeysActive(T txn, TransportId t, KeySetId k)
 			throws DbException;
+
+	/**
+	 * Starts the auto-delete timer for the given message.
+	 */
+	void startAutoDeleteTimer(T txn, MessageId m) throws DbException;
 
 	/**
 	 * Updates the transmission count, expiry time and estimated time of arrival

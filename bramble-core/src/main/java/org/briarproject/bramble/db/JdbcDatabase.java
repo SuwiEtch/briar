@@ -98,7 +98,7 @@ import static org.briarproject.bramble.util.LogUtils.now;
 abstract class JdbcDatabase implements Database<Connection> {
 
 	// Package access for testing
-	static final int CODE_SCHEMA_VERSION = 47;
+	static final int CODE_SCHEMA_VERSION = 48;
 
 	// Time period offsets for incoming transport keys
 	private static final int OFFSET_PREV = -1;
@@ -180,6 +180,11 @@ abstract class JdbcDatabase implements Database<Connection> {
 					+ " state INT NOT NULL,"
 					+ " shared BOOLEAN NOT NULL,"
 					+ " temporary BOOLEAN NOT NULL,"
+					// Null if no timer duration has been set
+					+ " autoDeleteDuration BIGINT,"
+					// Null if no timer duration has been set or the timer
+					// hasn't started
+					+ " autoDeleteDeadline BIGINT,"
 					+ " length INT NOT NULL,"
 					+ " raw BLOB," // Null if message has been deleted
 					+ " PRIMARY KEY (messageId),"
@@ -336,6 +341,10 @@ abstract class JdbcDatabase implements Database<Connection> {
 			"CREATE INDEX IF NOT EXISTS statusesByContactIdTimestamp"
 					+ " ON statuses (contactId, timestamp)";
 
+	private static final String INDEX_MESSAGES_BY_AUTO_DELETE_DEADLINE =
+			"CREATE INDEX IF NOT EXISTS messagesByAutoDeleteDeadline"
+					+ " ON messages (autoDeleteDeadline)";
+
 	private static final Logger LOG =
 			getLogger(JdbcDatabase.class.getName());
 
@@ -463,7 +472,8 @@ abstract class JdbcDatabase implements Database<Connection> {
 				new Migration43_44(dbTypes),
 				new Migration44_45(),
 				new Migration45_46(),
-				new Migration46_47(dbTypes)
+				new Migration46_47(dbTypes),
+				new Migration47_48()
 		);
 	}
 
@@ -531,6 +541,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 			s.executeUpdate(INDEX_MESSAGE_DEPENDENCIES_BY_DEPENDENCY_ID);
 			s.executeUpdate(INDEX_STATUSES_BY_CONTACT_ID_GROUP_ID);
 			s.executeUpdate(INDEX_STATUSES_BY_CONTACT_ID_TIMESTAMP);
+			s.executeUpdate(INDEX_MESSAGES_BY_AUTO_DELETE_DEADLINE);
 			s.close();
 		} catch (SQLException e) {
 			tryToClose(s, LOG, WARNING);
@@ -1290,7 +1301,9 @@ abstract class JdbcDatabase implements Database<Connection> {
 	public void deleteMessage(Connection txn, MessageId m) throws DbException {
 		PreparedStatement ps = null;
 		try {
-			String sql = "UPDATE messages SET raw = NULL WHERE messageId = ?";
+			String sql = "UPDATE messages"
+					+ " SET raw = NULL, autoDeleteDeadline = NULL"
+					+ " WHERE messageId = ?";
 			ps = txn.prepareStatement(sql);
 			ps.setBytes(1, m.getBytes());
 			int affected = ps.executeUpdate();
@@ -1769,7 +1782,6 @@ abstract class JdbcDatabase implements Database<Connection> {
 				// Return early if there are no matches
 				if (intersection.isEmpty()) return Collections.emptySet();
 			}
-			if (intersection == null) throw new AssertionError();
 			return intersection;
 		} catch (SQLException e) {
 			tryToClose(rs, LOG, WARNING);
@@ -2216,6 +2228,33 @@ abstract class JdbcDatabase implements Database<Connection> {
 			rs = ps.executeQuery();
 			List<MessageId> ids = new ArrayList<>();
 			while (rs.next()) ids.add(new MessageId(rs.getBytes(1)));
+			rs.close();
+			ps.close();
+			return ids;
+		} catch (SQLException e) {
+			tryToClose(rs, LOG, WARNING);
+			tryToClose(ps, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
+	public Map<MessageId, GroupId> getMessagesToDelete(Connection txn)
+			throws DbException {
+		long now = clock.currentTimeMillis();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT messageId, groupId FROM messages"
+					+ " WHERE autoDeleteDeadline <= ?";
+			ps = txn.prepareStatement(sql);
+			ps.setLong(1, now);
+			rs = ps.executeQuery();
+			Map<MessageId, GroupId> ids = new HashMap<>();
+			while (rs.next()) {
+				ids.put(new MessageId(rs.getBytes(1)),
+						new GroupId(rs.getBytes(2)));
+			}
 			rs.close();
 			ps.close();
 			return ids;
@@ -2776,7 +2815,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 	}
 
 	@Override
-	public void raiseSeenFlag(Connection txn, ContactId c, MessageId m)
+	public boolean raiseSeenFlag(Connection txn, ContactId c, MessageId m)
 			throws DbException {
 		PreparedStatement ps = null;
 		try {
@@ -2788,6 +2827,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
+			return affected == 1;
 		} catch (SQLException e) {
 			tryToClose(ps, LOG, WARNING);
 			throw new DbException(e);
@@ -3012,6 +3052,25 @@ abstract class JdbcDatabase implements Database<Connection> {
 			ps = txn.prepareStatement(sql);
 			ps.setBytes(1, m.getBytes());
 			ps.setInt(2, c.getInt());
+			int affected = ps.executeUpdate();
+			if (affected < 0 || affected > 1) throw new DbStateException();
+			ps.close();
+		} catch (SQLException e) {
+			tryToClose(ps, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
+	public void setAutoDeleteDuration(Connection txn, MessageId m,
+			long autoDeleteTimer) throws DbException {
+		PreparedStatement ps = null;
+		try {
+			String sql = "UPDATE messages SET autoDeleteDuration = ?"
+					+ " WHERE messageId = ? AND autoDeleteDuration IS NULL";
+			ps = txn.prepareStatement(sql);
+			ps.setLong(1, autoDeleteTimer);
+			ps.setBytes(2, m.getBytes());
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
@@ -3263,6 +3322,27 @@ abstract class JdbcDatabase implements Database<Connection> {
 			ps = txn.prepareStatement(sql);
 			ps.setString(1, t.getString());
 			ps.setInt(2, k.getInt());
+			int affected = ps.executeUpdate();
+			if (affected < 0 || affected > 1) throw new DbStateException();
+			ps.close();
+		} catch (SQLException e) {
+			tryToClose(ps, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
+	public void startAutoDeleteTimer(Connection txn, MessageId m)
+			throws DbException {
+		long now = clock.currentTimeMillis();
+		PreparedStatement ps = null;
+		try {
+			String sql = "UPDATE messages"
+					+ " SET autoDeleteDeadline = ? + autoDeleteDuration"
+					+ " WHERE messageId = ? AND autoDeleteDuration IS NOT NULL";
+			ps = txn.prepareStatement(sql);
+			ps.setLong(1, now);
+			ps.setBytes(2, m.getBytes());
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();

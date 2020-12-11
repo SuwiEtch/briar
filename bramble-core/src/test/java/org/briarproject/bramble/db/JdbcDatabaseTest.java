@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -631,8 +630,7 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 
 		// The group should not be visible to the contact
 		assertEquals(INVISIBLE, db.getGroupVisibility(txn, contactId, groupId));
-		assertEquals(emptyMap(),
-				db.getGroupVisibility(txn, groupId));
+		assertTrue(db.getGroupVisibility(txn, groupId).isEmpty());
 
 		// Make the group visible to the contact
 		db.addGroupVisibility(txn, contactId, groupId, false);
@@ -655,8 +653,7 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		// Make the group invisible again
 		db.removeGroupVisibility(txn, contactId, groupId);
 		assertEquals(INVISIBLE, db.getGroupVisibility(txn, contactId, groupId));
-		assertEquals(emptyMap(),
-				db.getGroupVisibility(txn, groupId));
+		assertTrue(db.getGroupVisibility(txn, groupId).isEmpty());
 
 		db.commitTransaction(txn);
 		db.close();
@@ -2345,6 +2342,57 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 
 		db.commitTransaction(txn);
 		db.close();
+	}
+
+	@Test
+	public void testAutoDeleteTimer() throws Exception {
+		long duration = 60_000;
+		long now = System.currentTimeMillis();
+		AtomicLong time = new AtomicLong(now);
+		Database<Connection> db =
+				open(false, new TestMessageFactory(), new SettableClock(time));
+		Connection txn = db.startTransaction();
+
+		// No messages should be due for deletion
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+
+		// Add a group and a message
+		db.addGroup(txn, group);
+		db.addMessage(txn, message, DELIVERED, false, false, null);
+
+		// No messages should be due for deletion
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+
+		// Set the message's auto-delete timer duration
+		db.setAutoDeleteDuration(txn, messageId, duration);
+
+		// No messages should be due for deletion
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+
+		// Start the message's auto-delete timer
+		db.startAutoDeleteTimer(txn, messageId);
+
+		// No messages should be due for deletion
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+
+		// 1 ms before the timer expires, no messages should be due for deletion
+		time.set(now + duration - 1);
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+
+		// When the timer expires, the message should be due for deletion
+		time.set(now + duration);
+		assertEquals(singletonMap(messageId, groupId),
+				db.getMessagesToDelete(txn));
+
+		// 1 ms after the timer expires, the message should be due for deletion
+		time.set(now + duration + 1);
+		assertEquals(singletonMap(messageId, groupId),
+				db.getMessagesToDelete(txn));
+
+		// Once the message has been deleted, it should no longer be due for
+		// deletion
+		db.deleteMessage(txn, messageId);
+		assertTrue(db.getMessagesToDelete(txn).isEmpty());
 	}
 
 	private Database<Connection> open(boolean resume) throws Exception {
