@@ -13,6 +13,8 @@ import org.briarproject.briar.R;
 import org.briarproject.briar.android.util.BriarAdapter;
 import org.briarproject.briar.android.util.ItemReturningAdapter;
 
+import java.util.Collection;
+
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -20,13 +22,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 
 @NotNullByDefault
 class ConversationAdapter
 		extends BriarAdapter<ConversationItem, ConversationItemViewHolder>
 		implements ItemReturningAdapter<ConversationItem> {
 
-	private ConversationListener listener;
+	private final ConversationListener listener;
 	private final RecycledViewPool imageViewPool;
 	private final ImageItemDecoration imageItemDecoration;
 	@Nullable
@@ -65,22 +68,20 @@ class ConversationAdapter
 			@LayoutRes int type) {
 		View v = LayoutInflater.from(viewGroup.getContext()).inflate(
 				type, viewGroup, false);
-		switch (type) {
-			case R.layout.list_item_conversation_msg_in:
-				return new ConversationMessageViewHolder(v, listener, true,
-						imageViewPool, imageItemDecoration);
-			case R.layout.list_item_conversation_msg_out:
-				return new ConversationMessageViewHolder(v, listener, false,
-						imageViewPool, imageItemDecoration);
-			case R.layout.list_item_conversation_notice_in:
-				return new ConversationNoticeViewHolder(v, listener, true);
-			case R.layout.list_item_conversation_notice_out:
-				return new ConversationNoticeViewHolder(v, listener, false);
-			case R.layout.list_item_conversation_request:
-				return new ConversationRequestViewHolder(v, listener, true);
-			default:
-				throw new IllegalArgumentException("Unknown ConversationItem");
+		if (type == R.layout.list_item_conversation_msg_in) {
+			return new ConversationMessageViewHolder(v, listener, true,
+					imageViewPool, imageItemDecoration);
+		} else if (type == R.layout.list_item_conversation_msg_out) {
+			return new ConversationMessageViewHolder(v, listener, false,
+					imageViewPool, imageItemDecoration);
+		} else if (type == R.layout.list_item_conversation_notice_in) {
+			return new ConversationNoticeViewHolder(v, listener, true);
+		} else if (type == R.layout.list_item_conversation_notice_out) {
+			return new ConversationNoticeViewHolder(v, listener, false);
+		} else if (type == R.layout.list_item_conversation_request) {
+			return new ConversationRequestViewHolder(v, listener, true);
 		}
+		throw new IllegalArgumentException("Unknown ConversationItem");
 	}
 
 	@Override
@@ -107,22 +108,49 @@ class ConversationAdapter
 		return c1.equals(c2);
 	}
 
+	@Override
+	public void add(ConversationItem item) {
+		items.beginBatchedUpdates();
+		items.add(item);
+		updateTimersInBatch();
+		items.endBatchedUpdates();
+	}
+
+	@Override
+	public void addAll(Collection<ConversationItem> itemsToAdd) {
+		items.beginBatchedUpdates();
+		// there can be items already in the adapter
+		// SortedList takes care of duplicates and detecting changed items
+		items.addAll(itemsToAdd);
+		updateTimersInBatch();
+		items.endBatchedUpdates();
+	}
+
+	private void updateTimersInBatch() {
+		long lastTimerIncoming = NO_AUTO_DELETE_TIMER;
+		long lastTimerOutgoing = NO_AUTO_DELETE_TIMER;
+		for (int i = 0; i < items.size(); i++) {
+			ConversationItem c = items.get(i);
+			boolean itemChanged;
+			boolean timerChanged;
+			if (c.isIncoming()) {
+				timerChanged = lastTimerIncoming != c.getAutoDeleteTimer();
+				lastTimerIncoming = c.getAutoDeleteTimer();
+			} else {
+				timerChanged = lastTimerOutgoing != c.getAutoDeleteTimer();
+				lastTimerOutgoing = c.getAutoDeleteTimer();
+			}
+			itemChanged = c.setTimerNoticeVisible(timerChanged);
+			if (itemChanged) items.updateItemAt(i, c);
+		}
+	}
+
 	void setSelectionTracker(SelectionTracker<String> tracker) {
 		this.tracker = tracker;
 	}
 
-	@Nullable
-	ConversationItem getLastItem() {
-		if (items.size() > 0) {
-			return items.get(items.size() - 1);
-		} else {
-			return null;
-		}
-	}
-
 	SparseArray<ConversationItem> getOutgoingMessages() {
 		SparseArray<ConversationItem> messages = new SparseArray<>();
-
 		for (int i = 0; i < items.size(); i++) {
 			ConversationItem item = items.get(i);
 			if (!item.isIncoming()) {
