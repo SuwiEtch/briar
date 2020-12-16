@@ -54,6 +54,7 @@ import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.bramble.api.sync.MessageStatus;
 import org.briarproject.bramble.api.sync.Offer;
 import org.briarproject.bramble.api.sync.Request;
+import org.briarproject.bramble.api.sync.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.sync.event.GroupAddedEvent;
 import org.briarproject.bramble.api.sync.event.GroupRemovedEvent;
 import org.briarproject.bramble.api.sync.event.GroupVisibilityUpdatedEvent;
@@ -796,7 +797,12 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 		for (MessageId m : a.getMessageIds()) {
 			if (db.containsVisibleMessage(txn, c, m)) {
 				if (db.raiseSeenFlag(txn, c, m)) {
-					db.startAutoDeleteTimer(txn, m);
+					// This is the first time the message has been acked
+					long deadline = db.startAutoDeleteTimer(txn, m);
+					if (deadline != Long.MAX_VALUE) {
+						transaction.attach(new AutoDeleteTimerStartedEvent(m,
+								deadline));
+					}
 					acked.add(m);
 				}
 			}

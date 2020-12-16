@@ -756,9 +756,13 @@ interface Database<T> {
 			throws DbException;
 
 	/**
-	 * Starts the auto-delete timer for the given message.
+	 * Starts the auto-delete timer for the given message, if a timer duration
+	 * has been set and the timer has not already been started.
+	 *
+	 * @return The auto-delete deadline, or Long.MAX_VALUE if the timer was
+	 * not started.
 	 */
-	void startAutoDeleteTimer(T txn, MessageId m) throws DbException;
+	long startAutoDeleteTimer(T txn, MessageId m) throws DbException;
 
 	/**
 	 * Updates the transmission count, expiry time and estimated time of arrival

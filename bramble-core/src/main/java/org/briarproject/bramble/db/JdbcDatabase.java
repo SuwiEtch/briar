@@ -3357,21 +3357,37 @@ abstract class JdbcDatabase implements Database<Connection> {
 	}
 
 	@Override
-	public void startAutoDeleteTimer(Connection txn, MessageId m)
+	public long startAutoDeleteTimer(Connection txn, MessageId m)
 			throws DbException {
 		long now = clock.currentTimeMillis();
 		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			String sql = "UPDATE messages"
 					+ " SET autoDeleteDeadline = ? + autoDeleteDuration"
-					+ " WHERE messageId = ? AND autoDeleteDuration IS NOT NULL";
+					+ " WHERE messageId = ?"
+					+ " AND autoDeleteDuration IS NOT NULL"
+					+ " AND autoDeleteDeadline IS NULL";
 			ps = txn.prepareStatement(sql);
 			ps.setLong(1, now);
 			ps.setBytes(2, m.getBytes());
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
+			if (affected == 0) return Long.MAX_VALUE;
+			sql = "SELECT autoDeleteDeadline FROM messages"
+					+ " WHERE messageId = ?";
+			ps = txn.prepareStatement(sql);
+			ps.setBytes(1, m.getBytes());
+			rs = ps.executeQuery();
+			if (!rs.next()) throw new DbStateException();
+			long deadline = rs.getLong(1);
+			if (rs.next()) throw new DbStateException();
+			rs.close();
+			ps.close();
+			return deadline;
 		} catch (SQLException e) {
+			tryToClose(rs, LOG, WARNING);
 			tryToClose(ps, LOG, WARNING);
 			throw new DbException(e);
 		}

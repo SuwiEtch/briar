@@ -2373,7 +2373,10 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
 
 		// Start the message's auto-delete timer
-		db.startAutoDeleteTimer(txn, messageId);
+		assertEquals(now + duration, db.startAutoDeleteTimer(txn, messageId));
+
+		// The timer can't be started again
+		assertEquals(Long.MAX_VALUE, db.startAutoDeleteTimer(txn, messageId));
 
 		// No messages should be due for deletion, but the message should be
 		// scheduled for deletion

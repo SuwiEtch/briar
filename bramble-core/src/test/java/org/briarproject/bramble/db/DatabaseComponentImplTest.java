@@ -37,6 +37,7 @@ import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.bramble.api.sync.MessageStatus;
 import org.briarproject.bramble.api.sync.Offer;
 import org.briarproject.bramble.api.sync.Request;
+import org.briarproject.bramble.api.sync.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.sync.event.GroupAddedEvent;
 import org.briarproject.bramble.api.sync.event.GroupRemovedEvent;
 import org.briarproject.bramble.api.sync.event.GroupVisibilityUpdatedEvent;
@@ -983,6 +984,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
 			will(returnValue(true));
 			oneOf(database).startAutoDeleteTimer(txn, messageId);
+			will(returnValue(Long.MAX_VALUE)); // No auto-delete timer
 			oneOf(database).commitTransaction(txn);
 			oneOf(eventBus).broadcast(with(any(MessagesAckedEvent.class)));
 		}});
@@ -1007,6 +1009,34 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
 			will(returnValue(false)); // Already acked
 			oneOf(database).commitTransaction(txn);
+		}});
+		DatabaseComponent db = createDatabaseComponent(database, eventBus,
+				eventExecutor, shutdownManager);
+
+		db.transaction(false, transaction -> {
+			Ack a = new Ack(singletonList(messageId));
+			db.receiveAck(transaction, contactId, a);
+		});
+	}
+
+	@Test
+	public void testReceiveAckWithAutoDeleteTimer() throws Exception {
+		long deadline = System.currentTimeMillis();
+		context.checking(new Expectations() {{
+			oneOf(database).startTransaction();
+			will(returnValue(txn));
+			oneOf(database).containsContact(txn, contactId);
+			will(returnValue(true));
+			oneOf(database).containsVisibleMessage(txn, contactId, messageId);
+			will(returnValue(true));
+			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
+			will(returnValue(true));
+			oneOf(database).startAutoDeleteTimer(txn, messageId);
+			will(returnValue(deadline));
+			oneOf(database).commitTransaction(txn);
+			oneOf(eventBus).broadcast(with(any(
+					AutoDeleteTimerStartedEvent.class)));
+			oneOf(eventBus).broadcast(with(any(MessagesAckedEvent.class)));
 		}});
 		DatabaseComponent db = createDatabaseComponent(database, eventBus,
 				eventExecutor, shutdownManager);
