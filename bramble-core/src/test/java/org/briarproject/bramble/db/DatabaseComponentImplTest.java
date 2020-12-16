@@ -981,8 +981,32 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			oneOf(database).containsVisibleMessage(txn, contactId, messageId);
 			will(returnValue(true));
 			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
+			will(returnValue(true));
+			oneOf(database).startAutoDeleteTimer(txn, messageId);
 			oneOf(database).commitTransaction(txn);
 			oneOf(eventBus).broadcast(with(any(MessagesAckedEvent.class)));
+		}});
+		DatabaseComponent db = createDatabaseComponent(database, eventBus,
+				eventExecutor, shutdownManager);
+
+		db.transaction(false, transaction -> {
+			Ack a = new Ack(singletonList(messageId));
+			db.receiveAck(transaction, contactId, a);
+		});
+	}
+
+	@Test
+	public void testReceiveDuplicateAck() throws Exception {
+		context.checking(new Expectations() {{
+			oneOf(database).startTransaction();
+			will(returnValue(txn));
+			oneOf(database).containsContact(txn, contactId);
+			will(returnValue(true));
+			oneOf(database).containsVisibleMessage(txn, contactId, messageId);
+			will(returnValue(true));
+			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
+			will(returnValue(false)); // Already acked
+			oneOf(database).commitTransaction(txn);
 		}});
 		DatabaseComponent db = createDatabaseComponent(database, eventBus,
 				eventExecutor, shutdownManager);

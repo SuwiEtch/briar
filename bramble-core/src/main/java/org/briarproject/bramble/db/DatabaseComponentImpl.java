@@ -795,8 +795,10 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 		Collection<MessageId> acked = new ArrayList<>();
 		for (MessageId m : a.getMessageIds()) {
 			if (db.containsVisibleMessage(txn, c, m)) {
-				db.raiseSeenFlag(txn, c, m);
-				acked.add(m);
+				if (db.raiseSeenFlag(txn, c, m)) {
+					db.startAutoDeleteTimer(txn, m);
+					acked.add(m);
+				}
 			}
 		}
 		if (acked.size() > 0) {
