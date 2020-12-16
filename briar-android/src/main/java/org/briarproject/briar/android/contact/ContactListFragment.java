@@ -38,6 +38,7 @@ import org.briarproject.briar.android.keyagreement.ContactExchangeActivity;
 import org.briarproject.briar.android.util.BriarSnackbarBuilder;
 import org.briarproject.briar.android.view.BriarRecyclerView;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
+import org.briarproject.briar.api.avatar.event.AvatarUpdatedEvent;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
@@ -286,7 +287,27 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 			checkForPendingContacts();
+		} else if (e instanceof AvatarUpdatedEvent) {
+			AvatarUpdatedEvent a = (AvatarUpdatedEvent) e;
+			updateAvatar(a);
 		}
+	}
+
+	@UiThread
+	private void updateAvatar(AvatarUpdatedEvent a) {
+		adapter.incrementRevision();
+		int position = adapter.findItemPosition(a.getContactId());
+		ContactListItem oldItem = adapter.getItemAt(position);
+		if (oldItem == null) {
+			return;
+		}
+		AuthorInfo oldAuthorInfo = oldItem.getAuthorInfo();
+		AuthorInfo newAuthorInfo = new AuthorInfo(oldAuthorInfo.getStatus(),
+				oldAuthorInfo.getAlias(), a.getAttachmentHeader());
+		ContactListItem newItem = new ContactListItem(oldItem.getContact(),
+				newAuthorInfo, oldItem.isConnected(), oldItem.isEmpty(),
+				oldItem.getUnreadCount(), oldItem.getTimestamp());
+		adapter.updateItemAt(position, newItem);
 	}
 
 	@UiThread
