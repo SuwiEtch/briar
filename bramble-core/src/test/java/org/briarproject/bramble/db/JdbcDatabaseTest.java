@@ -2353,46 +2353,58 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 				open(false, new TestMessageFactory(), new SettableClock(time));
 		Connection txn = db.startTransaction();
 
-		// No messages should be due for deletion
+		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
 
 		// Add a group and a message
 		db.addGroup(txn, group);
 		db.addMessage(txn, message, DELIVERED, false, false, null);
 
-		// No messages should be due for deletion
+		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
 
 		// Set the message's auto-delete timer duration
 		db.setAutoDeleteDuration(txn, messageId, duration);
 
-		// No messages should be due for deletion
+		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
 
 		// Start the message's auto-delete timer
 		db.startAutoDeleteTimer(txn, messageId);
 
-		// No messages should be due for deletion
+		// No messages should be due for deletion, but the message should be
+		// scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(now + duration, db.getNextAutoDeleteDeadline(txn));
 
-		// 1 ms before the timer expires, no messages should be due for deletion
+		// 1 ms before the timer expires, no messages should be due for
+		// deletion but the message should be scheduled for deletion
 		time.set(now + duration - 1);
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(now + duration, db.getNextAutoDeleteDeadline(txn));
 
-		// When the timer expires, the message should be due for deletion
+		// When the timer expires, the message should be due and scheduled for
+		// deletion
 		time.set(now + duration);
 		assertEquals(singletonMap(messageId, groupId),
 				db.getMessagesToDelete(txn));
+		assertEquals(now + duration, db.getNextAutoDeleteDeadline(txn));
 
-		// 1 ms after the timer expires, the message should be due for deletion
+		// 1 ms after the timer expires, the message should be due and
+		// scheduled for deletion
 		time.set(now + duration + 1);
 		assertEquals(singletonMap(messageId, groupId),
 				db.getMessagesToDelete(txn));
+		assertEquals(now + duration, db.getNextAutoDeleteDeadline(txn));
 
-		// Once the message has been deleted, it should no longer be due for
-		// deletion
+		// Once the message has been deleted, it should no longer be due
+		// or scheduled for deletion
 		db.deleteMessage(txn, messageId);
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
+		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
 	}
 
 	private Database<Connection> open(boolean resume) throws Exception {

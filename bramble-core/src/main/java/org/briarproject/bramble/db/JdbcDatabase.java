@@ -2296,6 +2296,31 @@ abstract class JdbcDatabase implements Database<Connection> {
 	}
 
 	@Override
+	public long getNextAutoDeleteDeadline(Connection txn) throws DbException {
+		Statement s = null;
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT autoDeleteDeadline FROM messages"
+					+ " WHERE autoDeleteDeadline IS NOT NULL"
+					+ " ORDER BY autoDeleteDeadline LIMIT 1";
+			s = txn.createStatement();
+			rs = s.executeQuery(sql);
+			long nextDeadline = Long.MAX_VALUE;
+			if (rs.next()) {
+				nextDeadline = rs.getLong(1);
+				if (rs.next()) throw new AssertionError();
+			}
+			rs.close();
+			s.close();
+			return nextDeadline;
+		} catch (SQLException e) {
+			tryToClose(rs, LOG, WARNING);
+			tryToClose(s, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
 	public PendingContact getPendingContact(Connection txn, PendingContactId p)
 			throws DbException {
 		PreparedStatement ps = null;
