@@ -33,7 +33,7 @@ public class NullSafety {
 	/**
 	 * Stand-in for {@code Objects.equals()}.
 	 */
-	public static boolean equals(Object a, Object b) {
+	public static boolean equals(@Nullable Object a, @Nullable Object b) {
 		return (a == b) || (a != null && a.equals(b));
 	}
 
