@@ -295,19 +295,18 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 
 	@UiThread
 	private void updateAvatar(AvatarUpdatedEvent a) {
-		ContactId contactId = a.getContactId();
-
-		int position = adapter.findItemPosition(contactId);
+		adapter.incrementRevision();
+		int position = adapter.findItemPosition(a.getContactId());
 		ContactListItem oldItem = adapter.getItemAt(position);
-
+		if (oldItem == null) {
+			return;
+		}
 		AuthorInfo oldAuthorInfo = oldItem.getAuthorInfo();
 		AuthorInfo newAuthorInfo = new AuthorInfo(oldAuthorInfo.getStatus(),
 				oldAuthorInfo.getAlias(), a.getAttachmentHeader());
 		ContactListItem newItem = new ContactListItem(oldItem.getContact(),
 				newAuthorInfo, oldItem.isConnected(), oldItem.isEmpty(),
 				oldItem.getUnreadCount(), oldItem.getTimestamp());
-
-		adapter.incrementRevision();
 		adapter.updateItemAt(position, newItem);
 	}
 
