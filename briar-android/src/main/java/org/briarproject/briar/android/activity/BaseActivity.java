@@ -104,6 +104,8 @@ public abstract class BaseActivity extends AppCompatActivity
 		for (ActivityLifecycleController alc : lifecycleControllers) {
 			alc.onActivityCreate(this);
 		}
+
+		Localizer.getInstance().setLocale(getBaseContext());
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.util.Log;
 
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 
@@ -26,12 +27,16 @@ public class Localizer {
 	private Localizer(SharedPreferences sharedPreferences) {
 		this(Locale.getDefault(), getLocaleFromTag(
 				sharedPreferences.getString(LANGUAGE, "default")));
+		Log.d("language", "preference: " +
+				sharedPreferences.getString(LANGUAGE, "default"));
 	}
 
 	private Localizer(Locale systemLocale, @Nullable Locale userLocale) {
 		this.systemLocale = systemLocale;
 		if (userLocale == null) locale = systemLocale;
 		else locale = userLocale;
+		Log.d("language", "system locale: " + systemLocale);
+		Log.d("language", "current locale: " + locale);
 	}
 
 	// Instantiate the Localizer.
@@ -72,13 +77,19 @@ public class Localizer {
 	public Context setLocale(Context context) {
 		Resources res = context.getResources();
 		Configuration conf = res.getConfiguration();
+//		Configuration conf = new Configuration(res.getConfiguration());
+//		res.updateConfiguration(conf, res.getDisplayMetrics());
+
 		Locale currentLocale;
+		Log.d("language", "sdk: " + SDK_INT);
 		if (SDK_INT >= 24) {
 			currentLocale = conf.getLocales().get(0);
 		} else
 			currentLocale = conf.locale;
+		Log.d("language", "current locale: " + currentLocale);
 		if (locale.equals(currentLocale))
 			return context;
+		Log.d("language", "set locale: " + locale);
 		Locale.setDefault(locale);
 		if (SDK_INT >= 17) {
 			conf.setLocale(locale);
