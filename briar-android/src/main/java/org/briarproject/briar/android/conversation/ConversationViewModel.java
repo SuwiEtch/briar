@@ -30,6 +30,7 @@ import org.briarproject.briar.android.util.UiUtils;
 import org.briarproject.briar.android.viewmodel.LiveEvent;
 import org.briarproject.briar.android.viewmodel.MutableLiveEvent;
 import org.briarproject.briar.api.autodelete.AutoDeleteManager;
+import org.briarproject.briar.api.autodelete.event.AutoDeleteTimerMirroredEvent;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.messaging.AttachmentHeader;
 import org.briarproject.briar.api.messaging.MessagingManager;
@@ -107,8 +108,10 @@ public class ConversationViewModel extends AndroidViewModel
 			new MutableLiveEvent<>();
 	private final MutableLiveData<Boolean> showIntroductionAction =
 			new MutableLiveData<>();
-	private final MutableLiveData<Boolean> contactDeleted =
+	private final MutableLiveData<Long> autoDeleteTimer =
 			new MutableLiveData<>();
+	private final MutableLiveData<Boolean> contactDeleted =
+			new MutableLiveData<>(false);
 	private final MutableLiveEvent<PrivateMessageHeader> addedHeader =
 			new MutableLiveEvent<>();
 
@@ -139,8 +142,6 @@ public class ConversationViewModel extends AndroidViewModel
 		this.conversationManager = conversationManager;
 		messagingGroupId = Transformations
 				.map(contact, c -> messagingManager.getContactGroup(c).getId());
-		contactDeleted.setValue(false);
-
 		eventBus.addListener(this);
 	}
 
@@ -159,6 +160,11 @@ public class ConversationViewModel extends AndroidViewModel
 				LOG.info("Attachment received");
 				dbExecutor.execute(() -> attachmentRetriever
 						.loadAttachmentItem(a.getMessageId()));
+			}
+		} else if (e instanceof AutoDeleteTimerMirroredEvent) {
+			AutoDeleteTimerMirroredEvent a = (AutoDeleteTimerMirroredEvent) e;
+			if (a.getContactId().equals(contactId)) {
+				autoDeleteTimer.postValue(a.getNewTimer());
 			}
 		}
 	}
@@ -183,6 +189,11 @@ public class ConversationViewModel extends AndroidViewModel
 				Contact c = contactManager.getContact(contactId);
 				contact.postValue(c);
 				logDuration(LOG, "Loading contact", start);
+				start = now();
+				long timer = db.transactionWithResult(true, txn ->
+						autoDeleteManager.getAutoDeleteTimer(txn, contactId));
+				autoDeleteTimer.postValue(timer);
+				logDuration(LOG, "Getting auto-delete timer", start);
 				start = now();
 				checkFeaturesAndOnboarding(contactId);
 				logDuration(LOG, "Checking for image support", start);
@@ -346,6 +357,7 @@ public class ConversationViewModel extends AndroidViewModel
 			try {
 				db.transaction(false, txn ->
 						autoDeleteManager.setAutoDeleteTimer(txn, c, timer));
+				autoDeleteTimer.postValue(timer);
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
 			}
@@ -382,6 +394,10 @@ public class ConversationViewModel extends AndroidViewModel
 
 	LiveData<Boolean> showIntroductionAction() {
 		return showIntroductionAction;
+	}
+
+	LiveData<Long> getAutoDeleteTimer() {
+		return autoDeleteTimer;
 	}
 
 	LiveData<Boolean> isContactDeleted() {
