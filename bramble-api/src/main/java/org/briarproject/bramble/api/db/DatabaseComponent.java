@@ -315,6 +315,15 @@ public interface DatabaseComponent extends TransactionManager {
 			throws DbException;
 
 	/**
+	 * Returns the IDs of any messages of any messages that are due for
+	 * auto-deletion, along with their group IDs.
+	 * <p/>
+	 * Read-only.
+	 */
+	Map<MessageId, GroupId> getMessagesToDelete(Transaction txn)
+			throws DbException;
+
+	/**
 	 * Returns the metadata for all delivered messages in the given group.
 	 * <p/>
 	 * Read-only.
@@ -394,6 +403,15 @@ public interface DatabaseComponent extends TransactionManager {
 	 */
 	MessageStatus getMessageStatus(Transaction txn, ContactId c, MessageId m)
 			throws DbException;
+
+	/**
+	 * Returns the next time (in milliseconds since the Unix epoch) when a
+	 * message is due to be auto-deleted, or Long.MAX_VALUE if no messages
+	 * are scheduled to be auto-deleted.
+	 * <p/>
+	 * Read-only.
+	 */
+	long getNextAutoDeleteDeadline(Transaction txn) throws DbException;
 
 	/*
 	 * Returns the next time (in milliseconds since the Unix epoch) when a

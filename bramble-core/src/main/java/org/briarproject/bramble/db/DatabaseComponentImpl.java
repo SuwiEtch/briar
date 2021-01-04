@@ -599,6 +599,13 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 	}
 
 	@Override
+	public Map<MessageId, GroupId> getMessagesToDelete(Transaction transaction)
+			throws DbException {
+		T txn = unbox(transaction);
+		return db.getMessagesToDelete(txn);
+	}
+
+	@Override
 	public Map<MessageId, Metadata> getMessageMetadata(Transaction transaction,
 			GroupId g) throws DbException {
 		T txn = unbox(transaction);
@@ -691,6 +698,13 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 		if (!db.containsMessage(txn, m))
 			throw new NoSuchMessageException();
 		return db.getMessageDependents(txn, m);
+	}
+
+	@Override
+	public long getNextAutoDeleteDeadline(Transaction transaction)
+			throws DbException {
+		T txn = unbox(transaction);
+		return db.getNextAutoDeleteDeadline(txn);
 	}
 
 	@Override
