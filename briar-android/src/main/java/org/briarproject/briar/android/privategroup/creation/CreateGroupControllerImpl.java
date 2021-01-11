@@ -148,7 +148,7 @@ class CreateGroupControllerImpl extends ContactSelectorControllerImpl
 			ResultExceptionHandler<Void, DbException> handler) {
 		runOnDbThread(() -> {
 			try {
-				db.transaction(true, txn -> {
+				db.transaction(false, txn -> {
 					LocalAuthor localAuthor =
 							identityManager.getLocalAuthor(txn);
 					List<InvitationContext> contexts =
