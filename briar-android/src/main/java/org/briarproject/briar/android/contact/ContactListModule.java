@@ -8,15 +8,12 @@ import dagger.Module;
 import dagger.multibindings.IntoMap;
 
 @Module
-public class ContactModule {
+public abstract class ContactListModule {
 
-	@Module
-	public interface BindsModule {
-		@Binds
-		@IntoMap
-		@ViewModelKey(ContactListViewModel.class)
-		ViewModel bindForumListViewModel(
-				ContactListViewModel contactListViewModel);
-	}
+	@Binds
+	@IntoMap
+	@ViewModelKey(ContactListViewModel.class)
+	abstract ViewModel bindContactListViewModel(
+			ContactListViewModel contactListViewModel);
 
 }

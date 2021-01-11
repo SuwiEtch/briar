@@ -13,6 +13,7 @@ import org.briarproject.bramble.api.contact.event.PendingContactRemovedEvent;
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.db.NoSuchContactException;
+import org.briarproject.bramble.api.db.Transaction;
 import org.briarproject.bramble.api.db.TransactionManager;
 import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.event.EventListener;
@@ -34,14 +35,13 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import androidx.lifecycle.MutableLiveData;
 
-import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
-import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.bramble.util.LogUtils.now;
 
 @MethodsNotNullByDefault
@@ -54,6 +54,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	private final ContactManager contactManager;
 	private final ConversationManager conversationManager;
 	private final ConnectionRegistry connectionRegistry;
+	private final AndroidExecutor androidExecutor;
 
 	private final MutableLiveData<LiveResult<List<ContactListItem>>>
 			contactListItems = new MutableLiveData<>();
@@ -66,6 +67,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			ConversationManager conversationManager,
 			ConnectionRegistry connectionRegistry) {
 		super(application, dbExecutor, lifecycleManager, db, androidExecutor);
+		this.androidExecutor = androidExecutor;
 		this.contactManager = contactManager;
 		this.conversationManager = conversationManager;
 		this.connectionRegistry = connectionRegistry;
@@ -74,26 +76,36 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	public void loadContacts() {
 		runOnDbThread(() -> {
 			try {
-				long start = now();
-				List<ContactListItem> contacts = new ArrayList<>();
-				for (Contact c : contactManager.getContacts()) {
-					try {
-						ContactId id = c.getId();
-						MessageTracker.GroupCount count =
-								conversationManager.getGroupCount(id);
-						boolean connected =
-								connectionRegistry.isConnected(c.getId());
-						contacts.add(new ContactListItem(c, connected, count));
-					} catch (NoSuchContactException e) {
-						// Continue
-					}
-				}
-				logDuration(LOG, "Full load", start);
-				contactListItems.setValue(new LiveResult<>(contacts));
+				List<ContactListItem> contacts = loadContacts(null);
+				androidExecutor.runOnUiThread(() -> {
+					this.contactListItems.setValue(new LiveResult<>(contacts));
+				});
 			} catch (DbException e) {
-				logException(LOG, WARNING, e);
+				e.printStackTrace();
 			}
 		});
+		// TODO: I would like to use this instead of the above, but it crashes the app :/
+//		loadList(this::loadContacts, contactListItems::setValue);
+	}
+
+	private List<ContactListItem> loadContacts(@Nullable Transaction txn)
+			throws DbException {
+		long start = now();
+		List<ContactListItem> contacts = new ArrayList<>();
+		for (Contact c : contactManager.getContacts()) {
+			try {
+				ContactId id = c.getId();
+				MessageTracker.GroupCount count =
+						conversationManager.getGroupCount(id);
+				boolean connected =
+						connectionRegistry.isConnected(c.getId());
+				contacts.add(new ContactListItem(c, connected, count));
+			} catch (NoSuchContactException e) {
+				// Continue
+			}
+		}
+		logDuration(LOG, "Full load", start);
+		return contacts;
 	}
 
 	@Override

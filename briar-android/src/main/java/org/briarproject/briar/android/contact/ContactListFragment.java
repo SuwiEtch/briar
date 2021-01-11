@@ -48,8 +48,8 @@ import static android.os.Build.VERSION.SDK_INT;
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 import static androidx.core.view.ViewCompat.getTransitionName;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
-import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
+import static org.briarproject.bramble.api.nullsafety.NullSafety.requireNonNull;
 import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.briar.android.conversation.ConversationActivity.CONTACT_ID;
 import static org.briarproject.briar.android.util.UiUtils.isSamsung7;
@@ -211,7 +211,6 @@ public class ContactListFragment extends BaseFragment
 	@Override
 	public void onStop() {
 		super.onStop();
-		list.showProgressBar();
 		list.stopPeriodicUpdate();
 		dismissSnackBar();
 	}

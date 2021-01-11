@@ -21,7 +21,7 @@ import org.briarproject.briar.android.blog.RssFeedImportActivity;
 import org.briarproject.briar.android.blog.RssFeedManageActivity;
 import org.briarproject.briar.android.blog.WriteBlogPostActivity;
 import org.briarproject.briar.android.contact.ContactListFragment;
-import org.briarproject.briar.android.contact.ContactModule;
+import org.briarproject.briar.android.contact.ContactListModule;
 import org.briarproject.briar.android.contact.add.remote.AddContactActivity;
 import org.briarproject.briar.android.contact.add.remote.LinkExchangeFragment;
 import org.briarproject.briar.android.contact.add.remote.NicknameFragment;
@@ -88,7 +88,7 @@ import dagger.Component;
 @Component(modules = {
 		ActivityModule.class,
 		BlogModule.class,
-		ContactModule.class,
+		ContactListModule.class,
 		CreateGroupModule.class,
 		ForumModule.class,
 		GroupInvitationModule.class,
