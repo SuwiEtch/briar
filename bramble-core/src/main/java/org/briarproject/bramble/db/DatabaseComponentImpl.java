@@ -976,6 +976,16 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 	}
 
 	@Override
+	public void setAutoDeleteDuration(Transaction transaction, MessageId m,
+			long autoDeleteTimer) throws DbException {
+		if (transaction.isReadOnly()) throw new IllegalArgumentException();
+		T txn = unbox(transaction);
+		if (!db.containsMessage(txn, m))
+			throw new NoSuchMessageException();
+		db.setAutoDeleteDuration(txn, m, autoDeleteTimer);
+	}
+
+	@Override
 	public void setContactVerified(Transaction transaction, ContactId c)
 			throws DbException {
 		if (transaction.isReadOnly()) throw new IllegalArgumentException();

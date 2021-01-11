@@ -554,6 +554,12 @@ public interface DatabaseComponent extends TransactionManager {
 			throws DbException;
 
 	/**
+	 * Sets the auto-delete timer duration for the given message.
+	 */
+	void setAutoDeleteDuration(Transaction txn, MessageId m,
+			long autoDeleteTimer) throws DbException;
+
+	/**
 	 * Marks the given contact as verified.
 	 */
 	void setContactVerified(Transaction txn, ContactId c) throws DbException;

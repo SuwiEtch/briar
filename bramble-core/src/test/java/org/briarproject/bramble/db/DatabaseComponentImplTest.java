@@ -70,6 +70,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.VISIBLE;
@@ -596,11 +597,11 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			throws Exception {
 		context.checking(new Expectations() {{
 			// Check whether the message is in the DB (which it's not)
-			exactly(12).of(database).startTransaction();
+			exactly(13).of(database).startTransaction();
 			will(returnValue(txn));
-			exactly(12).of(database).containsMessage(txn, messageId);
+			exactly(13).of(database).containsMessage(txn, messageId);
 			will(returnValue(false));
-			exactly(12).of(database).abortTransaction(txn);
+			exactly(13).of(database).abortTransaction(txn);
 			// Allow other checks to pass
 			allowing(database).containsContact(txn, contactId);
 			will(returnValue(true));
@@ -659,6 +660,15 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		try {
 			db.transaction(false, transaction ->
 					db.mergeMessageMetadata(transaction, messageId, metadata));
+			fail();
+		} catch (NoSuchMessageException expected) {
+			// Expected
+		}
+
+		try {
+			db.transaction(false, transaction ->
+					db.setAutoDeleteDuration(transaction, message.getId(),
+							MIN_AUTO_DELETE_TIMER_MS));
 			fail();
 		} catch (NoSuchMessageException expected) {
 			// Expected
