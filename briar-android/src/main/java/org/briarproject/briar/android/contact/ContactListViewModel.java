@@ -23,6 +23,7 @@ import org.briarproject.bramble.api.plugin.event.ContactConnectedEvent;
 import org.briarproject.bramble.api.plugin.event.ContactDisconnectedEvent;
 import org.briarproject.bramble.api.system.AndroidExecutor;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
+import org.briarproject.briar.android.viewmodel.LiveResult;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
@@ -34,6 +35,8 @@ import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+
+import androidx.lifecycle.MutableLiveData;
 
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
@@ -52,6 +55,9 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	private final ConversationManager conversationManager;
 	private final ConnectionRegistry connectionRegistry;
 
+	private final MutableLiveData<LiveResult<List<ContactListItem>>>
+			contactListItems = new MutableLiveData<>();
+
 	@Inject
 	public ContactListViewModel(Application application,
 			@DatabaseExecutor Executor dbExecutor,
@@ -65,7 +71,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		this.connectionRegistry = connectionRegistry;
 	}
 
-	private void loadContacts() {
+	public void loadContacts() {
 		runOnDbThread(() -> {
 			try {
 				long start = now();
@@ -83,7 +89,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 					}
 				}
 				logDuration(LOG, "Full load", start);
-//				displayContacts(revision, contacts);
+				contactListItems.setValue(new LiveResult<>(contacts));
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
 			}
@@ -112,6 +118,10 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				e instanceof PendingContactRemovedEvent) {
 //			checkForPendingContacts();
 		}
+	}
+
+	public MutableLiveData<LiveResult<List<ContactListItem>>> getContactListItems() {
+		return contactListItems;
 	}
 
 }

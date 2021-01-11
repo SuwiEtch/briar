@@ -48,6 +48,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 import static androidx.core.view.ViewCompat.getTransitionName;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
+import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.briar.android.conversation.ConversationActivity.CONTACT_ID;
@@ -131,7 +132,8 @@ public class ContactListFragment extends BaseFragment
 								(ContactListItemViewHolder) list
 										.getRecyclerView()
 										.findViewHolderForAdapterPosition(
-												adapter.findItemPosition(item));
+												adapter.findItemPosition(
+														contactId));
 						Pair<View, String> avatar =
 								Pair.create(holder.avatar,
 										getTransitionName(holder.avatar));
@@ -156,6 +158,14 @@ public class ContactListFragment extends BaseFragment
 		list.setEmptyText(getString(R.string.no_contacts));
 		list.setEmptyAction(getString(R.string.no_contacts_action));
 
+		viewModel.getContactListItems()
+				.observe(getViewLifecycleOwner(), result -> {
+					result.onError(this::handleException).onSuccess(items -> {
+						adapter.submitList(items);
+						if (requireNonNull(items).size() == 0) list.showData();
+					});
+				});
+
 		return contentView;
 	}
 
@@ -179,7 +189,7 @@ public class ContactListFragment extends BaseFragment
 		super.onStart();
 		notificationManager.clearAllContactNotifications();
 		notificationManager.clearAllContactAddedNotifications();
-		loadContacts();
+		viewModel.loadContacts();
 		checkForPendingContacts();
 		list.startPeriodicUpdate();
 	}
@@ -201,8 +211,6 @@ public class ContactListFragment extends BaseFragment
 	@Override
 	public void onStop() {
 		super.onStop();
-		eventBus.removeListener(this);
-		adapter.clear();
 		list.showProgressBar();
 		list.stopPeriodicUpdate();
 		dismissSnackBar();
