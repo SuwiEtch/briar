@@ -17,7 +17,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static org.briarproject.bramble.util.StringUtils.trim;
 import static org.briarproject.briar.android.util.UiUtils.formatDate;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 
 @UiThread
 @NotNullByDefault

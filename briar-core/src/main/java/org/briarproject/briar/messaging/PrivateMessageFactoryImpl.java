@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 
 import static org.briarproject.bramble.util.StringUtils.utf8IsTooLong;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_PRIVATE_MESSAGE_TEXT_LENGTH;
 import static org.briarproject.briar.messaging.MessageTypes.PRIVATE_MESSAGE;
 

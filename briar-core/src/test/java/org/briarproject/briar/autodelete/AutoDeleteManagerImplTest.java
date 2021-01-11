@@ -18,14 +18,14 @@ import org.jmock.Expectations;
 import org.junit.Test;
 
 import static java.util.Collections.singletonList;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.client.ContactGroupConstants.GROUP_KEY_CONTACT_ID;
 import static org.briarproject.bramble.test.TestUtils.getContact;
 import static org.briarproject.bramble.test.TestUtils.getGroup;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.autodelete.AutoDeleteManager.CLIENT_ID;
 import static org.briarproject.briar.api.autodelete.AutoDeleteManager.MAJOR_VERSION;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
 import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMER;
 import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;

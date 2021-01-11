@@ -23,8 +23,8 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.junit.Assert.assertEquals;
 
 public class AutoDeleteIntegrationTest

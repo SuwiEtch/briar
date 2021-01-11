@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.crypto.CryptoConstants.MAC_BYTES;
 import static org.briarproject.bramble.api.crypto.CryptoConstants.MAX_SIGNATURE_BYTES;
 import static org.briarproject.bramble.test.TestUtils.getAgreementPublicKey;
@@ -31,9 +33,7 @@ import static org.briarproject.bramble.test.TestUtils.getRandomBytes;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
 import static org.briarproject.bramble.test.TestUtils.getTransportPropertiesMap;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.introduction.IntroductionConstants.MAX_INTRODUCTION_TEXT_LENGTH;
 import static org.briarproject.briar.api.introduction.IntroductionManager.CLIENT_ID;
 import static org.briarproject.briar.api.introduction.IntroductionManager.MAJOR_VERSION;

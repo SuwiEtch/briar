@@ -62,7 +62,7 @@ import static java.util.Collections.emptyList;
 import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_BODY_LENGTH;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.util.IoUtils.copyAndClose;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES_AUTO_DELETE;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_ONLY;

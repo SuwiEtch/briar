@@ -43,8 +43,8 @@ import javax.annotation.Nullable;
 
 import static java.util.Collections.emptySet;
 import static junit.framework.Assert.assertNotNull;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.briar.api.forum.ForumSharingManager.CLIENT_ID;
 import static org.briarproject.briar.api.forum.ForumSharingManager.MAJOR_VERSION;
 import static org.briarproject.briar.test.BriarTestUtils.assertGroupCount;

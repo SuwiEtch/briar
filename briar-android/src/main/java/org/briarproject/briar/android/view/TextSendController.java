@@ -19,7 +19,7 @@ import androidx.annotation.UiThread;
 
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 import static java.util.Collections.emptyList;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 
 @UiThread
 @NotNullByDefault

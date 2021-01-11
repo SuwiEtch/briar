@@ -25,6 +25,12 @@ public interface AutoDeleteManager {
 	int MINOR_VERSION = 0;
 
 	/**
+	 * Placeholder value indicating that a message has no auto-delete timer.
+	 * This value should not be sent over the wire - send null instead.
+	 */
+	long NO_AUTO_DELETE_TIMER = -1;
+
+	/**
 	 * Returns the auto-delete timer duration for the given contact. Use
 	 * {@link #getAutoDeleteTimer(Transaction, ContactId, long)} if the timer
 	 * will be used in an outgoing message.

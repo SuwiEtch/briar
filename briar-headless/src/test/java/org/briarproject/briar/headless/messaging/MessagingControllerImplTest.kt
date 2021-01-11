@@ -22,7 +22,7 @@ import org.briarproject.bramble.api.sync.event.MessagesSentEvent
 import org.briarproject.bramble.test.ImmediateExecutor
 import org.briarproject.bramble.test.TestUtils.getRandomId
 import org.briarproject.bramble.util.StringUtils.getRandomString
-import org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER
+import org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER
 import org.briarproject.briar.api.client.SessionId
 import org.briarproject.briar.api.conversation.DeletionResult
 import org.briarproject.briar.api.introduction.IntroductionRequest
@@ -89,7 +89,8 @@ internal class MessagingControllerImplTest : ControllerTest() {
     fun listIntroductionRequest() {
         val request = IntroductionRequest(
             message.id, group.id, timestamp, true, true, true, false, sessionId, author, text,
-            false, AuthorInfo(UNVERIFIED), NO_AUTO_DELETE_TIMER
+            false, AuthorInfo(UNVERIFIED),
+            NO_AUTO_DELETE_TIMER
         )
 
         expectGetContact()
@@ -330,7 +331,8 @@ internal class MessagingControllerImplTest : ControllerTest() {
     fun testIntroductionRequestWithNullText() {
         val request = IntroductionRequest(
             message.id, group.id, timestamp, true, true, true, false, sessionId, author, null,
-            false, AuthorInfo(VERIFIED), NO_AUTO_DELETE_TIMER
+            false, AuthorInfo(VERIFIED),
+            NO_AUTO_DELETE_TIMER
         )
         val json = """
             {

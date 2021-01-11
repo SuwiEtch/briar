@@ -137,7 +137,7 @@ import static org.briarproject.briar.android.conversation.ImageActivity.NAME;
 import static org.briarproject.briar.android.util.UiUtils.getAvatarTransitionName;
 import static org.briarproject.briar.android.util.UiUtils.getBulbTransitionName;
 import static org.briarproject.briar.android.util.UiUtils.observeOnce;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_ATTACHMENTS_PER_MESSAGE;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_PRIVATE_MESSAGE_TEXT_LENGTH;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES_AUTO_DELETE;

@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.Collection;
 
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.briar.api.blog.BlogSharingManager.CLIENT_ID;
 import static org.briarproject.briar.api.blog.BlogSharingManager.MAJOR_VERSION;
 import static org.briarproject.briar.test.BriarTestUtils.assertGroupCount;

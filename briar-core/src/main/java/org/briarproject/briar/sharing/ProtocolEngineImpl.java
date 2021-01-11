@@ -34,7 +34,7 @@ import static java.lang.Math.max;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.VISIBLE;
-import static org.briarproject.briar.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.sharing.MessageType.ABORT;
 import static org.briarproject.briar.sharing.MessageType.ACCEPT;
 import static org.briarproject.briar.sharing.MessageType.DECLINE;
