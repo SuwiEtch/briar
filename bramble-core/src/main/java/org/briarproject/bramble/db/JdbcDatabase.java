@@ -3374,7 +3374,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
-			if (affected == 0) return Long.MAX_VALUE;
+			if (affected == 0) return TIMER_NOT_STARTED;
 			sql = "SELECT autoDeleteDeadline FROM messages"
 					+ " WHERE messageId = ?";
 			ps = txn.prepareStatement(sql);

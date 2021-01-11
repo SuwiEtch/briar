@@ -92,6 +92,7 @@ import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
+import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_OFFERED_MESSAGES;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
 import static org.briarproject.bramble.util.LogUtils.logException;
@@ -813,7 +814,7 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 				if (db.raiseSeenFlag(txn, c, m)) {
 					// This is the first time the message has been acked
 					long deadline = db.startAutoDeleteTimer(txn, m);
-					if (deadline != Long.MAX_VALUE) {
+					if (deadline != TIMER_NOT_STARTED) {
 						transaction.attach(new AutoDeleteTimerStartedEvent(m,
 								deadline));
 					}

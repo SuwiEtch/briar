@@ -65,6 +65,7 @@ import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERE
 import static org.briarproject.bramble.api.sync.validation.MessageState.INVALID;
 import static org.briarproject.bramble.api.sync.validation.MessageState.PENDING;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
+import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.DB_SETTINGS_NAMESPACE;
 import static org.briarproject.bramble.db.DatabaseConstants.LAST_COMPACTED_KEY;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_COMPACTION_INTERVAL_MS;
@@ -2376,7 +2377,8 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		assertEquals(now + duration, db.startAutoDeleteTimer(txn, messageId));
 
 		// The timer can't be started again
-		assertEquals(Long.MAX_VALUE, db.startAutoDeleteTimer(txn, messageId));
+		assertEquals(TIMER_NOT_STARTED,
+				db.startAutoDeleteTimer(txn, messageId));
 
 		// No messages should be due for deletion, but the message should be
 		// scheduled for deletion

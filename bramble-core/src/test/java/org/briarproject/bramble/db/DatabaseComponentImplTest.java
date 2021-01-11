@@ -77,6 +77,7 @@ import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_LENGTH
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
 import static org.briarproject.bramble.api.transport.TransportConstants.REORDERING_WINDOW_SIZE;
+import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_OFFERED_MESSAGES;
 import static org.briarproject.bramble.test.TestUtils.getAgreementPrivateKey;
 import static org.briarproject.bramble.test.TestUtils.getAgreementPublicKey;
@@ -984,7 +985,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			oneOf(database).raiseSeenFlag(txn, contactId, messageId);
 			will(returnValue(true));
 			oneOf(database).startAutoDeleteTimer(txn, messageId);
-			will(returnValue(Long.MAX_VALUE)); // No auto-delete timer
+			will(returnValue(TIMER_NOT_STARTED)); // No auto-delete timer
 			oneOf(database).commitTransaction(txn);
 			oneOf(eventBus).broadcast(with(any(MessagesAckedEvent.class)));
 		}});
