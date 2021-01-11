@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.briar.R;
 
@@ -11,6 +12,8 @@ import javax.annotation.Nullable;
 
 import androidx.recyclerview.widget.DiffUtil.ItemCallback;
 import androidx.recyclerview.widget.ListAdapter;
+
+import static androidx.recyclerview.widget.SortedList.INVALID_POSITION;
 
 @NotNullByDefault
 public class ContactListAdapter extends
@@ -70,6 +73,15 @@ public class ContactListAdapter extends
 	public void onBindViewHolder(ContactListItemViewHolder viewHolder,
 			int position) {
 		viewHolder.bind(getItem(position), listener);
+	}
+
+	int findItemPosition(ContactId c) {
+		for (int i = 0; i < getItemCount(); i++) {
+			ContactItem item = getItem(i);
+			if (item != null && item.getContact().getId().equals(c))
+				return i;
+		}
+		return INVALID_POSITION; // Not found
 	}
 
 }

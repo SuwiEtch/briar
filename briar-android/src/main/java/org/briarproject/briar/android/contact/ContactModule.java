@@ -19,5 +19,4 @@ public class ContactModule {
 				ContactListViewModel contactListViewModel);
 	}
 
-
 }
