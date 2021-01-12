@@ -27,6 +27,7 @@ import org.briarproject.bramble.api.sync.event.MessageAddedEvent;
 import org.briarproject.bramble.api.system.AndroidExecutor;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
 import org.briarproject.briar.android.viewmodel.LiveResult;
+import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
@@ -62,6 +63,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	private final ConnectionRegistry connectionRegistry;
 	private final AndroidExecutor androidExecutor;
 	private final EventBus eventBus;
+	private final AndroidNotificationManager notificationManager;
 
 	private final MutableLiveData<LiveResult<List<ContactListItem>>>
 			contactListItems = new MutableLiveData<>();
@@ -75,13 +77,15 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			LifecycleManager lifecycleManager, TransactionManager db,
 			AndroidExecutor androidExecutor, ContactManager contactManager,
 			ConversationManager conversationManager,
-			ConnectionRegistry connectionRegistry, EventBus eventBus) {
+			ConnectionRegistry connectionRegistry, EventBus eventBus,
+			AndroidNotificationManager notificationManager) {
 		super(application, dbExecutor, lifecycleManager, db, androidExecutor);
 		this.androidExecutor = androidExecutor;
 		this.contactManager = contactManager;
 		this.conversationManager = conversationManager;
 		this.connectionRegistry = connectionRegistry;
 		this.eventBus = eventBus;
+		this.notificationManager = notificationManager;
 		this.eventBus.addListener(this);
 	}
 
@@ -192,6 +196,14 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				logException(LOG, WARNING, e);
 			}
 		});
+	}
+
+	void clearAllContactNotifications() {
+		notificationManager.clearAllContactNotifications();
+	}
+
+	void clearAllContactAddedNotifications() {
+		notificationManager.clearAllContactAddedNotifications();
 	}
 
 }

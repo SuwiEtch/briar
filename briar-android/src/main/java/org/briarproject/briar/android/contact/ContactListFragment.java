@@ -10,7 +10,6 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.briarproject.bramble.api.connection.ConnectionRegistry;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
@@ -24,7 +23,6 @@ import org.briarproject.briar.android.fragment.BaseFragment;
 import org.briarproject.briar.android.keyagreement.ContactExchangeActivity;
 import org.briarproject.briar.android.util.BriarSnackbarBuilder;
 import org.briarproject.briar.android.view.BriarRecyclerView;
-import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 
 import javax.annotation.Nullable;
@@ -54,10 +52,6 @@ public class ContactListFragment extends BaseFragment
 
 	public static final String TAG = ContactListFragment.class.getName();
 
-	@Inject
-	ConnectionRegistry connectionRegistry;
-	@Inject
-	AndroidNotificationManager notificationManager;
 	@Inject
 	ViewModelProvider.Factory viewModelFactory;
 
@@ -175,8 +169,8 @@ public class ContactListFragment extends BaseFragment
 	@Override
 	public void onStart() {
 		super.onStart();
-		notificationManager.clearAllContactNotifications();
-		notificationManager.clearAllContactAddedNotifications();
+		viewModel.clearAllContactNotifications();
+		viewModel.clearAllContactAddedNotifications();
 		viewModel.loadContacts();
 		viewModel.checkForPendingContacts();
 		list.startPeriodicUpdate();
