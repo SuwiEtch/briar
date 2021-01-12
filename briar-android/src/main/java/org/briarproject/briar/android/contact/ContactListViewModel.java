@@ -23,7 +23,6 @@ import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.bramble.api.plugin.event.ContactConnectedEvent;
 import org.briarproject.bramble.api.plugin.event.ContactDisconnectedEvent;
-import org.briarproject.bramble.api.sync.Message;
 import org.briarproject.bramble.api.sync.event.MessageAddedEvent;
 import org.briarproject.bramble.api.system.AndroidExecutor;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
@@ -42,6 +41,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.MutableLiveData;
 
 import static java.util.logging.Level.WARNING;
@@ -133,9 +133,11 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			LOG.info("Contact added, reloading");
 			loadContacts();
 		} else if (e instanceof ContactConnectedEvent) {
-			setConnected(((ContactConnectedEvent) e).getContactId(), true);
+			updateItem(((ContactConnectedEvent) e).getContactId(),
+					item -> item.updatedItem(true), false);
 		} else if (e instanceof ContactDisconnectedEvent) {
-			setConnected(((ContactDisconnectedEvent) e).getContactId(), false);
+			updateItem(((ContactDisconnectedEvent) e).getContactId(),
+					item -> item.updatedItem(false), false);
 		} else if (e instanceof ContactRemovedEvent) {
 			LOG.info("Contact removed, removing item");
 			removeItem(((ContactRemovedEvent) e).getContactId());
@@ -144,10 +146,11 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			ConversationMessageReceivedEvent<?> p =
 					(ConversationMessageReceivedEvent<?>) e;
 			ConversationMessageHeader h = p.getMessageHeader();
-			updateItem(p.getContactId(), h);
+			updateItem(p.getContactId(), item -> item.updatedItem(h), true);
 		} else if (e instanceof MessageAddedEvent) {
 			MessageAddedEvent a = (MessageAddedEvent) e;
-			updateItem(a.getContactId(), a.getMessage());
+			updateItem(a.getContactId(),
+					item -> item.updatedItem(a.getMessage()), true);
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 			checkForPendingContacts();
@@ -162,30 +165,13 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		return hasPendingContacts;
 	}
 
-	private void updateItem(ContactId c, ConversationMessageHeader h) {
+	private void updateItem(ContactId c,
+			Function<ContactListItem, ContactListItem> replacer, boolean sort) {
 		List<ContactListItem> list = updateListItems(contactListItems,
 				itemToTest -> itemToTest.getContact().getId().equals(c),
-				itemToUpdate -> itemToUpdate.updatedItem(h));
+				replacer);
 		if (list == null) return;
-		Collections.sort(list);
-		contactListItems.setValue(new LiveResult<>(list));
-	}
-
-	private void updateItem(ContactId c, Message m) {
-		List<ContactListItem> list = updateListItems(contactListItems,
-				itemToTest -> itemToTest.getContact().getId().equals(c),
-				itemToUpdate -> itemToUpdate.updatedItem(m));
-		if (list == null) return;
-		Collections.sort(list);
-		contactListItems.setValue(new LiveResult<>(list));
-	}
-
-	private void setConnected(ContactId c, boolean connected) {
-		List<ContactListItem> list = updateListItems(contactListItems,
-				itemToTest -> itemToTest.getContact().getId().equals(c),
-				itemToUpdate -> itemToUpdate.updatedItem(connected));
-		if (list == null) return;
-		Collections.sort(list);
+		if (sort) Collections.sort(list);
 		contactListItems.setValue(new LiveResult<>(list));
 	}
 
