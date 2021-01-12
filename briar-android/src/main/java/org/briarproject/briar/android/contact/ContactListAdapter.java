@@ -20,6 +20,9 @@ public class ContactListAdapter extends
 		ListAdapter<ContactListItem, ContactListItemViewHolder> {
 
 	@Nullable
+	// TODO: using the click listsener interface from BaseContactListAdapter on
+	// purpose here because it is entangled with ContactListItemViewHolder. At
+	// some point we probably want to change that.
 	protected final BaseContactListAdapter.OnContactClickListener<ContactListItem>
 			listener;
 
