@@ -27,8 +27,6 @@ import org.briarproject.briar.android.view.BriarRecyclerView;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 
-import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -55,7 +53,6 @@ public class ContactListFragment extends BaseFragment
 		implements OnMenuItemClickListener {
 
 	public static final String TAG = ContactListFragment.class.getName();
-	private static final Logger LOG = Logger.getLogger(TAG);
 
 	@Inject
 	ConnectionRegistry connectionRegistry;
