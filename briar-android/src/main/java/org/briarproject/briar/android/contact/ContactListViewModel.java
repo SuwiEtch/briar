@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import androidx.arch.core.util.Function;
@@ -97,7 +96,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		loadList(this::loadContacts, contactListItems::setValue);
 	}
 
-	private List<ContactListItem> loadContacts(@Nullable Transaction txn)
+	private List<ContactListItem> loadContacts(Transaction txn)
 			throws DbException {
 		long start = now();
 		List<ContactListItem> contacts = new ArrayList<>();
@@ -105,7 +104,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			try {
 				ContactId id = c.getId();
 				MessageTracker.GroupCount count =
-						conversationManager.getGroupCount(id);
+						conversationManager.getGroupCount(txn, id);
 				boolean connected =
 						connectionRegistry.isConnected(c.getId());
 				contacts.add(new ContactListItem(c, connected, count));

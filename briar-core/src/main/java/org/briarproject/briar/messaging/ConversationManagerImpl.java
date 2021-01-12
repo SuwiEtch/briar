@@ -57,20 +57,27 @@ class ConversationManagerImpl implements ConversationManager {
 
 	@Override
 	public GroupCount getGroupCount(ContactId contactId) throws DbException {
-		int msgCount = 0, unreadCount = 0;
-		long latestTime = 0;
 		Transaction txn = db.startTransaction(true);
 		try {
-			for (ConversationClient client : clients) {
-				GroupCount count = client.getGroupCount(txn, contactId);
-				msgCount += count.getMsgCount();
-				unreadCount += count.getUnreadCount();
-				if (count.getLatestMsgTime() > latestTime)
-					latestTime = count.getLatestMsgTime();
-			}
+			GroupCount groupCount = getGroupCount(txn, contactId);
 			db.commitTransaction(txn);
+			return groupCount;
 		} finally {
 			db.endTransaction(txn);
+		}
+	}
+
+	@Override
+	public GroupCount getGroupCount(Transaction txn, ContactId contactId)
+			throws DbException {
+		int msgCount = 0, unreadCount = 0;
+		long latestTime = 0;
+		for (ConversationClient client : clients) {
+			GroupCount count = client.getGroupCount(txn, contactId);
+			msgCount += count.getMsgCount();
+			unreadCount += count.getUnreadCount();
+			if (count.getLatestMsgTime() > latestTime)
+				latestTime = count.getLatestMsgTime();
 		}
 		return new GroupCount(msgCount, unreadCount, latestTime);
 	}
@@ -87,7 +94,8 @@ class ConversationManagerImpl implements ConversationManager {
 	}
 
 	@Override
-	public DeletionResult deleteMessages(ContactId c, Collection<MessageId> toDelete)
+	public DeletionResult deleteMessages(ContactId c,
+			Collection<MessageId> toDelete)
 			throws DbException {
 		return db.transactionWithResult(false, txn -> {
 			DeletionResult result = new DeletionResult();
