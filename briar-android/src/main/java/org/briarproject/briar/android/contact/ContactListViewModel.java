@@ -94,23 +94,14 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	}
 
 	void loadContacts() {
-		runOnDbThread(() -> {
-			try {
-				List<ContactListItem> contacts = loadContacts(null);
-				contactListItems.postValue(new LiveResult<>(contacts));
-			} catch (DbException e) {
-				e.printStackTrace();
-			}
-		});
-		// TODO: I would like to use this instead of the above, but it crashes the app :/
-//		loadList(this::loadContacts, contactListItems::setValue);
+		loadList(this::loadContacts, contactListItems::setValue);
 	}
 
 	private List<ContactListItem> loadContacts(@Nullable Transaction txn)
 			throws DbException {
 		long start = now();
 		List<ContactListItem> contacts = new ArrayList<>();
-		for (Contact c : contactManager.getContacts()) {
+		for (Contact c : contactManager.getContacts(txn)) {
 			try {
 				ContactId id = c.getId();
 				MessageTracker.GroupCount count =
