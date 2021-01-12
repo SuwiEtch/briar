@@ -17,7 +17,6 @@ import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
-import org.briarproject.briar.android.contact.BaseContactListAdapter.OnContactClickListener;
 import org.briarproject.briar.android.contact.add.remote.AddContactActivity;
 import org.briarproject.briar.android.contact.add.remote.PendingContactListActivity;
 import org.briarproject.briar.android.conversation.ConversationActivity;
@@ -114,37 +113,8 @@ public class ContactListFragment extends BaseFragment
 		FabSpeedDial speedDial = contentView.findViewById(R.id.speedDial);
 		speedDial.addOnMenuItemClickListener(this);
 
-		OnContactClickListener<ContactListItem> onContactClickListener =
-				(view, item) -> {
-					Intent i = new Intent(getActivity(),
-							ConversationActivity.class);
-					ContactId contactId = item.getContact().getId();
-					i.putExtra(CONTACT_ID, contactId.getInt());
-
-					if (SDK_INT >= 23 && !isSamsung7()) {
-						ContactListItemViewHolder holder =
-								(ContactListItemViewHolder) list
-										.getRecyclerView()
-										.findViewHolderForAdapterPosition(
-												adapter.findItemPosition(
-														contactId));
-						Pair<View, String> avatar =
-								Pair.create(holder.avatar,
-										getTransitionName(holder.avatar));
-						Pair<View, String> bulb =
-								Pair.create(holder.bulb,
-										getTransitionName(holder.bulb));
-						ActivityOptionsCompat options =
-								makeSceneTransitionAnimation(getActivity(),
-										avatar, bulb);
-						ActivityCompat.startActivity(getActivity(), i,
-								options.toBundle());
-					} else {
-						// work-around for android bug #224270
-						startActivity(i);
-					}
-				};
-		adapter = new ContactListAdapter(onContactClickListener);
+		adapter = new ContactListAdapter(
+				(view, item) -> contactItemClicked(item));
 		list = contentView.findViewById(R.id.list);
 		list.setLayoutManager(new LinearLayoutManager(requireContext()));
 		list.setAdapter(adapter);
@@ -169,6 +139,28 @@ public class ContactListFragment extends BaseFragment
 				});
 
 		return contentView;
+	}
+
+	private void contactItemClicked(ContactListItem item) {
+		Intent i = new Intent(getActivity(), ConversationActivity.class);
+		ContactId contactId = item.getContact().getId();
+		i.putExtra(CONTACT_ID, contactId.getInt());
+
+		if (SDK_INT >= 23 && !isSamsung7()) {
+			ContactListItemViewHolder holder = (ContactListItemViewHolder) list
+					.getRecyclerView().findViewHolderForAdapterPosition(
+							adapter.findItemPosition(contactId));
+			Pair<View, String> avatar = Pair.create(holder.avatar,
+					getTransitionName(holder.avatar));
+			Pair<View, String> bulb = Pair.create(holder.bulb,
+					getTransitionName(holder.bulb));
+			ActivityOptionsCompat options =
+					makeSceneTransitionAnimation(getActivity(), avatar, bulb);
+			ActivityCompat.startActivity(getActivity(), i, options.toBundle());
+		} else {
+			// work-around for android bug #224270
+			startActivity(i);
+		}
 	}
 
 	@Override
