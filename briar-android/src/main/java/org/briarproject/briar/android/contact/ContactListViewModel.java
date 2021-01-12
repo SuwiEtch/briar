@@ -126,14 +126,14 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	public void eventOccurred(Event e) {
 		if (e instanceof ContactAddedEvent) {
 			LOG.info("Contact added, reloading");
-//			loadContacts();
+			loadContacts();
 		} else if (e instanceof ContactConnectedEvent) {
 			setConnected(((ContactConnectedEvent) e).getContactId(), true);
 		} else if (e instanceof ContactDisconnectedEvent) {
 			setConnected(((ContactDisconnectedEvent) e).getContactId(), false);
 		} else if (e instanceof ContactRemovedEvent) {
 			LOG.info("Contact removed, removing item");
-//			removeItem(((ContactRemovedEvent) e).getContactId());
+			removeItem(((ContactRemovedEvent) e).getContactId());
 		} else if (e instanceof ConversationMessageReceivedEvent) {
 			LOG.info("Conversation message received, updating item");
 			ConversationMessageReceivedEvent<?> p =
@@ -177,6 +177,13 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				itemToUpdate -> itemToUpdate.updatedItem(connected));
 		if (list == null) return;
 		Collections.sort(list);
+		contactListItems.setValue(new LiveResult<>(list));
+	}
+
+	private void removeItem(ContactId c) {
+		List<ContactListItem> list = removeListItems(contactListItems,
+				itemToTest -> itemToTest.getContact().getId().equals(c));
+		if (list == null) return;
 		contactListItems.setValue(new LiveResult<>(list));
 	}
 
