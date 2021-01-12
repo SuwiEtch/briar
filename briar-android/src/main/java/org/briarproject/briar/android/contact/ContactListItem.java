@@ -59,6 +59,12 @@ public class ContactListItem extends ContactItem
 		return item;
 	}
 
+	public ContactListItem updatedItem(boolean connected) {
+		ContactListItem item = new ContactListItem(getContact(), connected,
+				empty, unread, timestamp);
+		return item;
+	}
+
 	boolean isEmpty() {
 		return empty;
 	}
