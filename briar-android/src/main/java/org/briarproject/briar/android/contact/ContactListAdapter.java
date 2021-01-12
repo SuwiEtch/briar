@@ -60,7 +60,7 @@ public class ContactListAdapter extends
 
 	@Override
 	public ContactListItemViewHolder onCreateViewHolder(ViewGroup viewGroup,
-			int i) {
+			int viewType) {
 		View v = LayoutInflater.from(viewGroup.getContext()).inflate(
 				R.layout.list_item_contact, viewGroup, false);
 

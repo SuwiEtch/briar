@@ -93,7 +93,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		eventBus.removeListener(this);
 	}
 
-	public void loadContacts() {
+	void loadContacts() {
 		runOnDbThread(() -> {
 			try {
 				List<ContactListItem> contacts = loadContacts(null);
@@ -182,7 +182,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		contactListItems.setValue(new LiveResult<>(list));
 	}
 
-	public void checkForPendingContacts() {
+	void checkForPendingContacts() {
 		runOnDbThread(() -> {
 			try {
 				boolean hasPending =

@@ -52,17 +52,16 @@ public class ContactListItem extends ContactItem
 		return item;
 	}
 
-	public ContactListItem updatedItem(Message m) {
+	ContactListItem updatedItem(Message m) {
 		ContactListItem item = new ContactListItem(getContact(), isConnected(),
 				empty, unread, timestamp);
 		item.addMessage(m);
 		return item;
 	}
 
-	public ContactListItem updatedItem(boolean connected) {
-		ContactListItem item = new ContactListItem(getContact(), connected,
-				empty, unread, timestamp);
-		return item;
+	ContactListItem updatedItem(boolean connected) {
+		return new ContactListItem(getContact(), connected, empty, unread,
+				timestamp);
 	}
 
 	boolean isEmpty() {
