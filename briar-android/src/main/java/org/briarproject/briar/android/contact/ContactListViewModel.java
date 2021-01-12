@@ -61,7 +61,6 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	private final ContactManager contactManager;
 	private final ConversationManager conversationManager;
 	private final ConnectionRegistry connectionRegistry;
-	private final AndroidExecutor androidExecutor;
 	private final EventBus eventBus;
 	private final AndroidNotificationManager notificationManager;
 
@@ -80,7 +79,6 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			ConnectionRegistry connectionRegistry, EventBus eventBus,
 			AndroidNotificationManager notificationManager) {
 		super(application, dbExecutor, lifecycleManager, db, androidExecutor);
-		this.androidExecutor = androidExecutor;
 		this.contactManager = contactManager;
 		this.conversationManager = conversationManager;
 		this.connectionRegistry = connectionRegistry;
@@ -99,9 +97,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		runOnDbThread(() -> {
 			try {
 				List<ContactListItem> contacts = loadContacts(null);
-				androidExecutor.runOnUiThread(() -> {
-					contactListItems.setValue(new LiveResult<>(contacts));
-				});
+				contactListItems.postValue(new LiveResult<>(contacts));
 			} catch (DbException e) {
 				e.printStackTrace();
 			}
