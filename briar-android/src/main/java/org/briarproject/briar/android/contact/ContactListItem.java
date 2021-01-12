@@ -9,7 +9,8 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
 @NotNullByDefault
-public class ContactListItem extends ContactItem {
+public class ContactListItem extends ContactItem
+		implements Comparable<ContactListItem> {
 
 	private boolean empty;
 	private long timestamp;
@@ -57,4 +58,8 @@ public class ContactListItem extends ContactItem {
 		return unread;
 	}
 
+	@Override
+	public int compareTo(ContactListItem o) {
+		return Long.compare(o.getTimestamp(), timestamp);
+	}
 }

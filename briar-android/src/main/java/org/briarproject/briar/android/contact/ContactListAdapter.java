@@ -64,11 +64,6 @@ public class ContactListAdapter extends
 		return new ContactListItemViewHolder(v);
 	}
 
-//	@Override
-//	public int compare(ContactListItem c1, ContactListItem c2) {
-//		return Long.compare(c2.getTimestamp(), c1.getTimestamp());
-//	}
-
 	@Override
 	public void onBindViewHolder(ContactListItemViewHolder viewHolder,
 			int position) {

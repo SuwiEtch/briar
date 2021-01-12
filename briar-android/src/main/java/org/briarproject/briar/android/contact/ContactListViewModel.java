@@ -32,6 +32,7 @@ import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 import org.briarproject.briar.api.conversation.event.ConversationMessageReceivedEvent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
@@ -114,6 +115,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				// Continue
 			}
 		}
+		Collections.sort(contacts);
 		logDuration(LOG, "Full load", start);
 		return contacts;
 	}
@@ -151,6 +153,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				itemToTest -> itemToTest.getContact().getId().equals(c),
 				itemToUpdate -> itemToUpdate.updatedItem(h));
 		if (list == null) return;
+		Collections.sort(list);
 		contactListItems.setValue(new LiveResult<>(list));
 	}
 
