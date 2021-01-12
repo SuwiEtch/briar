@@ -14,7 +14,6 @@ import org.briarproject.bramble.api.connection.ConnectionRegistry;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.db.DbException;
-import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
@@ -64,8 +63,6 @@ public class ContactListFragment extends BaseFragment
 
 	@Inject
 	ConnectionRegistry connectionRegistry;
-	@Inject
-	EventBus eventBus;
 	@Inject
 	AndroidNotificationManager notificationManager;
 	@Inject

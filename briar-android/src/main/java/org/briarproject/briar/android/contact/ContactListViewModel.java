@@ -16,6 +16,7 @@ import org.briarproject.bramble.api.db.NoSuchContactException;
 import org.briarproject.bramble.api.db.Transaction;
 import org.briarproject.bramble.api.db.TransactionManager;
 import org.briarproject.bramble.api.event.Event;
+import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.event.EventListener;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
@@ -55,6 +56,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 	private final ConversationManager conversationManager;
 	private final ConnectionRegistry connectionRegistry;
 	private final AndroidExecutor androidExecutor;
+	private final EventBus eventBus;
 
 	private final MutableLiveData<LiveResult<List<ContactListItem>>>
 			contactListItems = new MutableLiveData<>();
@@ -65,12 +67,20 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			LifecycleManager lifecycleManager, TransactionManager db,
 			AndroidExecutor androidExecutor, ContactManager contactManager,
 			ConversationManager conversationManager,
-			ConnectionRegistry connectionRegistry) {
+			ConnectionRegistry connectionRegistry, EventBus eventBus) {
 		super(application, dbExecutor, lifecycleManager, db, androidExecutor);
 		this.androidExecutor = androidExecutor;
 		this.contactManager = contactManager;
 		this.conversationManager = conversationManager;
 		this.connectionRegistry = connectionRegistry;
+		this.eventBus = eventBus;
+		this.eventBus.addListener(this);
+	}
+
+	@Override
+	protected void onCleared() {
+		super.onCleared();
+		eventBus.removeListener(this);
 	}
 
 	public void loadContacts() {
@@ -125,7 +135,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			ConversationMessageReceivedEvent<?> p =
 					(ConversationMessageReceivedEvent<?>) e;
 			ConversationMessageHeader h = p.getMessageHeader();
-//			updateItem(p.getContactId(), h);
+			updateItem(p.getContactId(), h);
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 //			checkForPendingContacts();
@@ -134,6 +144,14 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 
 	public MutableLiveData<LiveResult<List<ContactListItem>>> getContactListItems() {
 		return contactListItems;
+	}
+
+	private void updateItem(ContactId c, ConversationMessageHeader h) {
+		List<ContactListItem> list = updateListItems(contactListItems,
+				itemToTest -> itemToTest.getContact().getId().equals(c),
+				itemToUpdate -> itemToUpdate.updatedItem(h));
+		if (list == null) return;
+		contactListItems.setValue(new LiveResult<>(list));
 	}
 
 }

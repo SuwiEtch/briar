@@ -23,10 +23,26 @@ public class ContactListItem extends ContactItem {
 		this.timestamp = count.getLatestMsgTime();
 	}
 
+	// TODO: this constructor will become available once #214 is merged
+	private ContactListItem(Contact contact, boolean connected, boolean empty,
+			int unread, long timestamp) {
+		super(contact, connected);
+		this.empty = empty;
+		this.timestamp = timestamp;
+		this.unread = unread;
+	}
+
 	void addMessage(ConversationMessageHeader h) {
 		empty = false;
 		if (h.getTimestamp() > timestamp) timestamp = h.getTimestamp();
 		if (!h.isRead()) unread++;
+	}
+
+	ContactListItem updatedItem(ConversationMessageHeader h) {
+		ContactListItem item = new ContactListItem(getContact(), isConnected(),
+				empty, unread, timestamp);
+		item.addMessage(h);
+		return item;
 	}
 
 	boolean isEmpty() {
