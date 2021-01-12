@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.briar.R;
+import org.briarproject.briar.android.contact.BaseContactListAdapter.OnContactClickListener;
 
 import javax.annotation.Nullable;
 
@@ -23,11 +24,10 @@ public class ContactListAdapter extends
 	// TODO: using the click listsener interface from BaseContactListAdapter on
 	// purpose here because it is entangled with ContactListItemViewHolder. At
 	// some point we probably want to change that.
-	protected final BaseContactListAdapter.OnContactClickListener<ContactListItem>
-			listener;
+	protected final OnContactClickListener<ContactListItem> listener;
 
 	public ContactListAdapter(
-			BaseContactListAdapter.OnContactClickListener<ContactListItem> listener) {
+			OnContactClickListener<ContactListItem> listener) {
 		super(new ContactListCallback());
 		this.listener = listener;
 	}
@@ -63,7 +63,6 @@ public class ContactListAdapter extends
 			int viewType) {
 		View v = LayoutInflater.from(viewGroup.getContext()).inflate(
 				R.layout.list_item_contact, viewGroup, false);
-
 		return new ContactListItemViewHolder(v);
 	}
 
