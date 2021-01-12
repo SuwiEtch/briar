@@ -23,6 +23,8 @@ import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.bramble.api.plugin.event.ContactConnectedEvent;
 import org.briarproject.bramble.api.plugin.event.ContactDisconnectedEvent;
+import org.briarproject.bramble.api.sync.Message;
+import org.briarproject.bramble.api.sync.event.MessageAddedEvent;
 import org.briarproject.bramble.api.system.AndroidExecutor;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
 import org.briarproject.briar.android.viewmodel.LiveResult;
@@ -138,6 +140,9 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 					(ConversationMessageReceivedEvent<?>) e;
 			ConversationMessageHeader h = p.getMessageHeader();
 			updateItem(p.getContactId(), h);
+		} else if (e instanceof MessageAddedEvent) {
+			MessageAddedEvent a = (MessageAddedEvent) e;
+			updateItem(a.getContactId(), a.getMessage());
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 //			checkForPendingContacts();
@@ -152,6 +157,15 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 		List<ContactListItem> list = updateListItems(contactListItems,
 				itemToTest -> itemToTest.getContact().getId().equals(c),
 				itemToUpdate -> itemToUpdate.updatedItem(h));
+		if (list == null) return;
+		Collections.sort(list);
+		contactListItems.setValue(new LiveResult<>(list));
+	}
+
+	private void updateItem(ContactId c, Message m) {
+		List<ContactListItem> list = updateListItems(contactListItems,
+				itemToTest -> itemToTest.getContact().getId().equals(c),
+				itemToUpdate -> itemToUpdate.updatedItem(m));
 		if (list == null) return;
 		Collections.sort(list);
 		contactListItems.setValue(new LiveResult<>(list));

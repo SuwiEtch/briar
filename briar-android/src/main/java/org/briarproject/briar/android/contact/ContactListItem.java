@@ -2,6 +2,7 @@ package org.briarproject.briar.android.contact;
 
 import org.briarproject.bramble.api.contact.Contact;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
+import org.briarproject.bramble.api.sync.Message;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 
@@ -39,10 +40,22 @@ public class ContactListItem extends ContactItem
 		if (!h.isRead()) unread++;
 	}
 
+	void addMessage(Message m) {
+		empty = false;
+		if (m.getTimestamp() > timestamp) timestamp = m.getTimestamp();
+	}
+
 	ContactListItem updatedItem(ConversationMessageHeader h) {
 		ContactListItem item = new ContactListItem(getContact(), isConnected(),
 				empty, unread, timestamp);
 		item.addMessage(h);
+		return item;
+	}
+
+	public ContactListItem updatedItem(Message m) {
+		ContactListItem item = new ContactListItem(getContact(), isConnected(),
+				empty, unread, timestamp);
+		item.addMessage(m);
 		return item;
 	}
 
