@@ -97,7 +97,7 @@ public class ContactListFragment extends BaseFragment
 		speedDial.addOnMenuItemClickListener(this);
 
 		adapter = new ContactListAdapter(
-				(view, item) -> contactItemClicked(item));
+				(view, item) -> contactItemClick(item));
 		list = contentView.findViewById(R.id.list);
 		list.setLayoutManager(new LinearLayoutManager(requireContext()));
 		list.setAdapter(adapter);
@@ -121,7 +121,7 @@ public class ContactListFragment extends BaseFragment
 		return contentView;
 	}
 
-	private void contactItemClicked(ContactListItem item) {
+	private void contactItemClick(ContactListItem item) {
 		Intent i = new Intent(getActivity(), ConversationActivity.class);
 		ContactId contactId = item.getContact().getId();
 		i.putExtra(CONTACT_ID, contactId.getInt());
