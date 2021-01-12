@@ -13,7 +13,6 @@ import com.google.android.material.snackbar.Snackbar;
 import org.briarproject.bramble.api.connection.ConnectionRegistry;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.contact.ContactManager;
-import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
@@ -47,9 +46,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 import static androidx.core.view.ViewCompat.getTransitionName;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
-import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.api.nullsafety.NullSafety.requireNonNull;
-import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.briar.android.conversation.ConversationActivity.CONTACT_ID;
 import static org.briarproject.briar.android.util.UiUtils.isSamsung7;
 
@@ -162,6 +159,14 @@ public class ContactListFragment extends BaseFragment
 						if (requireNonNull(items).size() == 0) list.showData();
 					});
 				});
+		viewModel.getHasPendingContacts()
+				.observe(getViewLifecycleOwner(), result -> {
+					if (result) {
+						runOnUiThreadUnlessDestroyed(this::showSnackBar);
+					} else {
+						runOnUiThreadUnlessDestroyed(this::dismissSnackBar);
+					}
+				});
 
 		return contentView;
 	}
@@ -187,22 +192,8 @@ public class ContactListFragment extends BaseFragment
 		notificationManager.clearAllContactNotifications();
 		notificationManager.clearAllContactAddedNotifications();
 		viewModel.loadContacts();
-		checkForPendingContacts();
+		viewModel.checkForPendingContacts();
 		list.startPeriodicUpdate();
-	}
-
-	private void checkForPendingContacts() {
-		listener.runOnDbThread(() -> {
-			try {
-				if (contactManager.getPendingContacts().isEmpty()) {
-					runOnUiThreadUnlessDestroyed(this::dismissSnackBar);
-				} else {
-					runOnUiThreadUnlessDestroyed(this::showSnackBar);
-				}
-			} catch (DbException e) {
-				logException(LOG, WARNING, e);
-			}
-		});
 	}
 
 	@Override

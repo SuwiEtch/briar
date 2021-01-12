@@ -44,8 +44,10 @@ import javax.inject.Inject;
 
 import androidx.lifecycle.MutableLiveData;
 
+import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
+import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.bramble.util.LogUtils.now;
 
 @MethodsNotNullByDefault
@@ -63,6 +65,9 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 
 	private final MutableLiveData<LiveResult<List<ContactListItem>>>
 			contactListItems = new MutableLiveData<>();
+
+	private final MutableLiveData<Boolean> hasPendingContacts =
+			new MutableLiveData<>();
 
 	@Inject
 	public ContactListViewModel(Application application,
@@ -91,7 +96,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			try {
 				List<ContactListItem> contacts = loadContacts(null);
 				androidExecutor.runOnUiThread(() -> {
-					this.contactListItems.setValue(new LiveResult<>(contacts));
+					contactListItems.setValue(new LiveResult<>(contacts));
 				});
 			} catch (DbException e) {
 				e.printStackTrace();
@@ -145,12 +150,16 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			updateItem(a.getContactId(), a.getMessage());
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
-//			checkForPendingContacts();
+			checkForPendingContacts();
 		}
 	}
 
 	public MutableLiveData<LiveResult<List<ContactListItem>>> getContactListItems() {
 		return contactListItems;
+	}
+
+	public MutableLiveData<Boolean> getHasPendingContacts() {
+		return hasPendingContacts;
 	}
 
 	private void updateItem(ContactId c, ConversationMessageHeader h) {
@@ -185,6 +194,20 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 				itemToTest -> itemToTest.getContact().getId().equals(c));
 		if (list == null) return;
 		contactListItems.setValue(new LiveResult<>(list));
+	}
+
+	public void checkForPendingContacts() {
+		runOnDbThread(() -> {
+			try {
+				boolean hasPending =
+						!contactManager.getPendingContacts().isEmpty();
+				androidExecutor.runOnUiThread(() -> {
+					hasPendingContacts.setValue(hasPending);
+				});
+			} catch (DbException e) {
+				logException(LOG, WARNING, e);
+			}
+		});
 	}
 
 }
