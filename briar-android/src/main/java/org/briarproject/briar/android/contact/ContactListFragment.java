@@ -11,7 +11,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.briarproject.bramble.api.contact.ContactId;
-import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
@@ -23,7 +22,6 @@ import org.briarproject.briar.android.fragment.BaseFragment;
 import org.briarproject.briar.android.keyagreement.ContactExchangeActivity;
 import org.briarproject.briar.android.util.BriarSnackbarBuilder;
 import org.briarproject.briar.android.view.BriarRecyclerView;
-import org.briarproject.briar.api.conversation.ConversationManager;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -65,12 +63,6 @@ public class ContactListFragment extends BaseFragment
 	 */
 	@Nullable
 	private Snackbar snackbar = null;
-
-	// Fields that are accessed from background threads must be volatile
-	@Inject
-	volatile ContactManager contactManager;
-	@Inject
-	volatile ConversationManager conversationManager;
 
 	public static ContactListFragment newInstance() {
 		Bundle args = new Bundle();
