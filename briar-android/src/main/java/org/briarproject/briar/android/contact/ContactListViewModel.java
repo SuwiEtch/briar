@@ -187,9 +187,7 @@ public class ContactListViewModel extends DbViewModel implements EventListener {
 			try {
 				boolean hasPending =
 						!contactManager.getPendingContacts().isEmpty();
-				androidExecutor.runOnUiThread(() -> {
-					hasPendingContacts.setValue(hasPending);
-				});
+				hasPendingContacts.postValue(hasPending);
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
 			}
