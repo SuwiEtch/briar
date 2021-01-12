@@ -128,11 +128,8 @@ public class ContactListFragment extends BaseFragment
 				});
 		viewModel.getHasPendingContacts()
 				.observe(getViewLifecycleOwner(), result -> {
-					if (result) {
-						runOnUiThreadUnlessDestroyed(this::showSnackBar);
-					} else {
-						runOnUiThreadUnlessDestroyed(this::dismissSnackBar);
-					}
+					if (result) showSnackBar();
+					else dismissSnackBar();
 				});
 
 		return contentView;
