@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog.Builder;
 import androidx.customview.view.AbsSavedState;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
@@ -42,6 +41,7 @@ import static androidx.customview.view.AbsSavedState.EMPTY_STATE;
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
 import static org.briarproject.bramble.util.AndroidUtils.getSupportedImageContentTypes;
 import static org.briarproject.briar.android.util.UiUtils.resolveColorAttribute;
+import static org.briarproject.briar.android.view.TextSendController.SendState.SENT;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_ATTACHMENTS_PER_MESSAGE;
 
 @UiThread
@@ -114,9 +114,15 @@ public class TextAttachmentController extends TextSendController
 		if (canSend()) {
 			if (loadingUris) throw new AssertionError();
 			listener.onSendClick(textInput.getText(),
-					attachmentManager.getAttachmentHeadersForSending());
-			reset();
+					attachmentManager.getAttachmentHeadersForSending(),
+					expectedTimer).observe(listener, this::onSendStateChanged);
 		}
+	}
+
+	@Override
+	protected void onSendStateChanged(SendState sendState) {
+		super.onSendStateChanged(sendState);
+		if (sendState == SENT) reset();
 	}
 
 	@Override
@@ -333,7 +339,7 @@ public class TextAttachmentController extends TextSendController
 	}
 
 	@UiThread
-	public interface AttachmentListener extends SendListener, LifecycleOwner {
+	public interface AttachmentListener extends SendListener {
 
 		void onAttachImage(Intent intent);
 
