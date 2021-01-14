@@ -405,10 +405,7 @@ public class ConversationActivity extends BriarActivity
 				return true;
 			case R.id.action_conversation_settings:
 				if (contactId == null) return false;
-				ConversationSettingsDialog dialog =
-						ConversationSettingsDialog.newInstance(contactId);
-				dialog.show(getSupportFragmentManager(),
-						ConversationSettingsDialog.TAG);
+				onAutoDeleteTimerNoticeClicked();
 				return true;
 			case R.id.action_delete_all_messages:
 				askToDeleteAllMessages();
@@ -1045,6 +1042,14 @@ public class ConversationActivity extends BriarActivity
 		ActivityOptionsCompat options =
 				makeSceneTransitionAnimation(this, view, transitionName);
 		ActivityCompat.startActivity(this, i, options.toBundle());
+	}
+
+	@Override
+	public void onAutoDeleteTimerNoticeClicked() {
+		ConversationSettingsDialog dialog =
+				ConversationSettingsDialog.newInstance(contactId);
+		dialog.show(getSupportFragmentManager(),
+				ConversationSettingsDialog.TAG);
 	}
 
 	@DatabaseExecutor
