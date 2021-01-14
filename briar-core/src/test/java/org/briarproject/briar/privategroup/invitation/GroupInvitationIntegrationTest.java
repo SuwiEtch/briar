@@ -648,6 +648,30 @@ public class GroupInvitationIntegrationTest
 		assertTrue(deleteMessages0From1(emptySet()).allDeleted());
 	}
 
+	@Test
+	public void testInvitationAfterReAddingContacts() throws Exception {
+		// sync invitation and response back
+		sendInvitation(clock.currentTimeMillis(), null);
+		sync0To1(1, true);
+		groupInvitationManager1
+				.respondToInvitation(contactId0From1, privateGroup, true);
+		sync1To0(1, true);
+
+		// sync group join messages
+		sync0To1(2, true); // + one invitation protocol join message
+		sync1To0(1, true);
+
+		assertFalse(groupInvitationManager0
+				.isInvitationAllowed(contact1From0, privateGroup.getId()));
+
+		// re-add contacts
+		removeAllContacts();
+		addDefaultContacts();
+
+		assertTrue(groupInvitationManager0
+				.isInvitationAllowed(contact1From0, privateGroup.getId()));
+	}
+
 	private Collection<ConversationMessageHeader> getMessages1From0()
 			throws DbException {
 		return db0.transactionWithResult(true, txn -> groupInvitationManager0

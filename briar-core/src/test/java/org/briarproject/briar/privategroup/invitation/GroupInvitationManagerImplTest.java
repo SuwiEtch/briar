@@ -198,6 +198,9 @@ public class GroupInvitationManagerImplTest extends BrambleMockTestCase {
 			oneOf(privateGroupManager).isMember(txn, privateGroup.getId(),
 					c.getAuthor());
 			will(returnValue(true));
+			oneOf(privateGroupManager)
+					.isOurPrivateGroup(txn, privateGroup.getId());
+			will(returnValue(false));
 		}});
 		expectAddingMember(privateGroup.getId(), c);
 	}
