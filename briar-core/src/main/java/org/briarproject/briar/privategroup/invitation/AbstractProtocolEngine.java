@@ -39,7 +39,7 @@ import static org.briarproject.briar.privategroup.invitation.MessageType.LEAVE;
 
 @Immutable
 @NotNullByDefault
-abstract class AbstractProtocolEngine<S extends Session>
+abstract class AbstractProtocolEngine<S extends Session<?>>
 		implements ProtocolEngine<S> {
 
 	protected final DatabaseComponent db;
