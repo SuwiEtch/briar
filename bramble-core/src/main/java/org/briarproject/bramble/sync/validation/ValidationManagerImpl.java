@@ -1,6 +1,7 @@
 package org.briarproject.bramble.sync.validation;
 
 import org.briarproject.bramble.api.Pair;
+import org.briarproject.bramble.api.autodelete.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.db.DatabaseComponent;
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
@@ -41,6 +42,7 @@ import javax.inject.Inject;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.bramble.api.db.DatabaseComponent.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.INVALID;
 import static org.briarproject.bramble.api.sync.validation.MessageState.PENDING;
@@ -325,7 +327,10 @@ class ValidationManagerImpl implements ValidationManager, Service,
 			}
 		}
 		db.setMessageState(txn, m.getId(), DELIVERED);
-		db.startAutoDeleteTimer(txn, m.getId());
+		long deadline = db.startAutoDeleteTimer(txn, m.getId());
+		if (deadline != TIMER_NOT_STARTED) {
+			txn.attach(new AutoDeleteTimerStartedEvent(m.getId(), deadline));
+		}
 		return new DeliveryResult(true, shareMsg);
 	}
 
