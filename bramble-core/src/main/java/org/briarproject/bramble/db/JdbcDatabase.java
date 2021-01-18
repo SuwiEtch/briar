@@ -72,6 +72,7 @@ import static java.util.Arrays.asList;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
+import static org.briarproject.bramble.api.db.DatabaseComponent.NO_AUTO_DELETE_DEADLINE;
 import static org.briarproject.bramble.api.db.Metadata.REMOVE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
@@ -2305,7 +2306,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 					+ " ORDER BY autoDeleteDeadline LIMIT 1";
 			s = txn.createStatement();
 			rs = s.executeQuery(sql);
-			long nextDeadline = Long.MAX_VALUE;
+			long nextDeadline = NO_AUTO_DELETE_DEADLINE;
 			if (rs.next()) {
 				nextDeadline = rs.getLong(1);
 				if (rs.next()) throw new AssertionError();

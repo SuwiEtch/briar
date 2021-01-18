@@ -513,8 +513,9 @@ interface Database<T> {
 
 	/**
 	 * Returns the next time (in milliseconds since the Unix epoch) when a
-	 * message is due to be auto-deleted, or Long.MAX_VALUE if no messages
-	 * are scheduled to be auto-deleted.
+	 * message is due to be auto-deleted, or
+	 * {@link DatabaseComponent#NO_AUTO_DELETE_DEADLINE} if no messages are
+	 * scheduled to be auto-deleted.
 	 * <p/>
 	 * Read-only.
 	 */

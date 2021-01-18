@@ -42,6 +42,12 @@ import javax.annotation.Nullable;
 public interface DatabaseComponent extends TransactionManager {
 
 	/**
+	 * Return value for {@link #getNextAutoDeleteDeadline(Transaction)} if
+	 * no messages are scheduled to be auto-deleted.
+	 */
+	long NO_AUTO_DELETE_DEADLINE = -1;
+
+	/**
 	 * Opens the database and returns true if the database already existed.
 	 *
 	 * @throws DataTooNewException if the data uses a newer schema than the
@@ -406,8 +412,8 @@ public interface DatabaseComponent extends TransactionManager {
 
 	/**
 	 * Returns the next time (in milliseconds since the Unix epoch) when a
-	 * message is due to be auto-deleted, or Long.MAX_VALUE if no messages
-	 * are scheduled to be auto-deleted.
+	 * message is due to be auto-deleted, or {@link #NO_AUTO_DELETE_DEADLINE}
+	 * if no messages are scheduled to be auto-deleted.
 	 * <p/>
 	 * Read-only.
 	 */

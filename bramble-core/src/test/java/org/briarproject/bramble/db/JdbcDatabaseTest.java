@@ -56,6 +56,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.briarproject.bramble.api.db.DatabaseComponent.NO_AUTO_DELETE_DEADLINE;
 import static org.briarproject.bramble.api.db.Metadata.REMOVE;
 import static org.briarproject.bramble.api.identity.AuthorConstants.MAX_AUTHOR_NAME_LENGTH;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
@@ -2356,7 +2357,8 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 
 		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
-		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
+		assertEquals(NO_AUTO_DELETE_DEADLINE,
+				db.getNextAutoDeleteDeadline(txn));
 
 		// Add a group and a message
 		db.addGroup(txn, group);
@@ -2364,14 +2366,16 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 
 		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
-		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
+		assertEquals(NO_AUTO_DELETE_DEADLINE,
+				db.getNextAutoDeleteDeadline(txn));
 
 		// Set the message's auto-delete timer duration
 		db.setAutoDeleteDuration(txn, messageId, duration);
 
 		// No messages should be due or scheduled for deletion
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
-		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
+		assertEquals(NO_AUTO_DELETE_DEADLINE,
+				db.getNextAutoDeleteDeadline(txn));
 
 		// Start the message's auto-delete timer
 		assertEquals(now + duration, db.startAutoDeleteTimer(txn, messageId));
@@ -2409,7 +2413,8 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		// or scheduled for deletion
 		db.deleteMessage(txn, messageId);
 		assertTrue(db.getMessagesToDelete(txn).isEmpty());
-		assertEquals(Long.MAX_VALUE, db.getNextAutoDeleteDeadline(txn));
+		assertEquals(NO_AUTO_DELETE_DEADLINE,
+				db.getNextAutoDeleteDeadline(txn));
 	}
 
 	private Database<Connection> open(boolean resume) throws Exception {

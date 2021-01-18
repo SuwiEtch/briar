@@ -37,6 +37,7 @@ import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
+import static org.briarproject.bramble.api.db.DatabaseComponent.NO_AUTO_DELETE_DEADLINE;
 import static org.briarproject.bramble.util.LogUtils.logException;
 
 @ThreadSafe
@@ -137,7 +138,7 @@ class AutoDeleteManagerImpl
 			}
 		}
 		long deadline = db.getNextAutoDeleteDeadline(txn);
-		if (deadline != Long.MAX_VALUE) {
+		if (deadline != NO_AUTO_DELETE_DEADLINE) {
 			synchronized (lock) {
 				nextCheck = scheduleDeletion(deadline);
 			}
