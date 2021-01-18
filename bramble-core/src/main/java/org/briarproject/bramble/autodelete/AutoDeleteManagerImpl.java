@@ -57,7 +57,7 @@ class AutoDeleteManagerImpl
 	private final Object lock = new Object();
 
 	@GuardedBy("lock")
-	private long nextDeadline = Long.MAX_VALUE;
+	private long nextDeadline = NO_AUTO_DELETE_DEADLINE;
 	@GuardedBy("lock")
 	@Nullable
 	private Cancellable nextCheck = null;
@@ -93,7 +93,8 @@ class AutoDeleteManagerImpl
 	@EventExecutor
 	private void onTimerStarted(long deadline) {
 		synchronized (lock) {
-			if (deadline < nextDeadline) {
+			if (nextDeadline == NO_AUTO_DELETE_DEADLINE ||
+					deadline < nextDeadline) {
 				nextDeadline = deadline;
 				if (nextCheck != null) nextCheck.cancel();
 				nextCheck = scheduleDeletion(deadline);
@@ -138,10 +139,10 @@ class AutoDeleteManagerImpl
 			}
 		}
 		long deadline = db.getNextAutoDeleteDeadline(txn);
-		if (deadline != NO_AUTO_DELETE_DEADLINE) {
-			synchronized (lock) {
-				nextCheck = scheduleDeletion(deadline);
-			}
+		synchronized (lock) {
+			nextDeadline = deadline;
+			if (deadline == NO_AUTO_DELETE_DEADLINE) nextCheck = null;
+			else nextCheck = scheduleDeletion(deadline);
 		}
 	}
 }
