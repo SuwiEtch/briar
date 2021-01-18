@@ -92,7 +92,6 @@ import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
-import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_OFFERED_MESSAGES;
 import static org.briarproject.bramble.util.LogUtils.logDuration;
 import static org.briarproject.bramble.util.LogUtils.logException;
@@ -1113,6 +1112,16 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 		if (!db.containsTransport(txn, t))
 			throw new NoSuchTransportException();
 		db.setTransportKeysActive(txn, t, k);
+	}
+
+	@Override
+	public long startAutoDeleteTimer(Transaction transaction, MessageId m)
+			throws DbException {
+		if (transaction.isReadOnly()) throw new IllegalArgumentException();
+		T txn = unbox(transaction);
+		if (!db.containsMessage(txn, m))
+			throw new NoSuchMessageException();
+		return db.startAutoDeleteTimer(txn, m);
 	}
 
 	@Override

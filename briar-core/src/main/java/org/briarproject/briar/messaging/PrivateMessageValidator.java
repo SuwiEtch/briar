@@ -23,11 +23,12 @@ import java.io.InputStream;
 
 import javax.annotation.concurrent.Immutable;
 
+import static java.util.Collections.emptyList;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_BODY_LENGTH;
 import static org.briarproject.bramble.api.transport.TransportConstants.MAX_CLOCK_DIFFERENCE;
 import static org.briarproject.bramble.util.ValidationUtils.checkLength;
 import static org.briarproject.bramble.util.ValidationUtils.checkSize;
-import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_ATTACHMENTS_PER_MESSAGE;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_CONTENT_TYPE_BYTES;
 import static org.briarproject.briar.api.messaging.MessagingConstants.MAX_PRIVATE_MESSAGE_TEXT_LENGTH;
@@ -94,7 +95,8 @@ class PrivateMessageValidator implements MessageValidator {
 				}
 			}
 			Metadata meta = metadataEncoder.encode(context.getDictionary());
-			return new MessageContext(meta, context.getDependencies());
+			return new MessageContext(meta, context.getDependencies(),
+					context.getAutoDeleteTimer());
 		} catch (IOException e) {
 			throw new InvalidMessageException(e);
 		}
@@ -150,7 +152,7 @@ class PrivateMessageValidator implements MessageValidator {
 		if (timer != NO_AUTO_DELETE_TIMER) {
 			meta.put(MSG_KEY_AUTO_DELETE_TIMER, timer);
 		}
-		return new BdfMessageContext(meta);
+		return new BdfMessageContext(meta, emptyList(), timer);
 	}
 
 	private BdfMessageContext validateAttachment(Message m, BdfList descriptor,

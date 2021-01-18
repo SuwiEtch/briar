@@ -71,6 +71,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.bramble.api.db.DatabaseComponent.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.VISIBLE;
@@ -78,7 +79,6 @@ import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_LENGTH
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
 import static org.briarproject.bramble.api.transport.TransportConstants.REORDERING_WINDOW_SIZE;
-import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_OFFERED_MESSAGES;
 import static org.briarproject.bramble.test.TestUtils.getAgreementPrivateKey;
 import static org.briarproject.bramble.test.TestUtils.getAgreementPublicKey;
@@ -597,11 +597,11 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			throws Exception {
 		context.checking(new Expectations() {{
 			// Check whether the message is in the DB (which it's not)
-			exactly(13).of(database).startTransaction();
+			exactly(14).of(database).startTransaction();
 			will(returnValue(txn));
-			exactly(13).of(database).containsMessage(txn, messageId);
+			exactly(14).of(database).containsMessage(txn, messageId);
 			will(returnValue(false));
-			exactly(13).of(database).abortTransaction(txn);
+			exactly(14).of(database).abortTransaction(txn);
 			// Allow other checks to pass
 			allowing(database).containsContact(txn, contactId);
 			will(returnValue(true));
@@ -626,7 +626,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessage(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
@@ -634,7 +634,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessageMetadata(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
@@ -642,7 +642,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessageState(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
@@ -650,7 +650,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessageStatus(transaction, contactId, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
@@ -699,7 +699,7 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessageDependencies(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
@@ -707,8 +707,16 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		}
 
 		try {
-			db.transaction(false, transaction ->
+			db.transaction(true, transaction ->
 					db.getMessageDependents(transaction, messageId));
+			fail();
+		} catch (NoSuchMessageException expected) {
+			// Expected
+		}
+
+		try {
+			db.transaction(false, transaction ->
+					db.startAutoDeleteTimer(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
 			// Expected

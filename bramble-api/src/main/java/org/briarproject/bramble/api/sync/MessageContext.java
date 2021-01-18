@@ -4,7 +4,6 @@ import org.briarproject.bramble.api.db.Metadata;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -14,15 +13,13 @@ public class MessageContext {
 
 	private final Metadata metadata;
 	private final Collection<MessageId> dependencies;
+	private final long autoDeleteTimer;
 
 	public MessageContext(Metadata metadata,
-			Collection<MessageId> dependencies) {
+			Collection<MessageId> dependencies, long autoDeleteTimer) {
 		this.metadata = metadata;
 		this.dependencies = dependencies;
-	}
-
-	public MessageContext(Metadata metadata) {
-		this(metadata, Collections.emptyList());
+		this.autoDeleteTimer = autoDeleteTimer;
 	}
 
 	public Metadata getMetadata() {
@@ -31,5 +28,9 @@ public class MessageContext {
 
 	public Collection<MessageId> getDependencies() {
 		return dependencies;
+	}
+
+	public long getAutoDeleteTimer() {
+		return autoDeleteTimer;
 	}
 }

@@ -52,12 +52,6 @@ import javax.annotation.Nullable;
 interface Database<T> {
 
 	/**
-	 * Return value for {@link #startAutoDeleteTimer(Object, MessageId)} if
-	 * the auto-delete timer was not started.
-	 */
-	long TIMER_NOT_STARTED = -1;
-
-	/**
 	 * Opens the database and returns true if the database already existed.
 	 *
 	 * @throws DataTooNewException if the data uses a newer schema than the
@@ -766,8 +760,9 @@ interface Database<T> {
 	 * Starts the auto-delete timer for the given message, if a timer duration
 	 * has been set and the timer has not already been started.
 	 *
-	 * @return The auto-delete deadline, or {@link #TIMER_NOT_STARTED} if the
-	 * timer was not started.
+	 * @return The auto-delete deadline, or
+	 * {@link DatabaseComponent#TIMER_NOT_STARTED} if no timer duration has
+	 * been set for this message or its timer has already been started.
 	 */
 	long startAutoDeleteTimer(T txn, MessageId m) throws DbException;
 

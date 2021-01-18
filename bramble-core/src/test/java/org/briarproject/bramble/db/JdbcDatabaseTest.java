@@ -57,6 +57,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.briarproject.bramble.api.db.DatabaseComponent.NO_AUTO_DELETE_DEADLINE;
+import static org.briarproject.bramble.api.db.DatabaseComponent.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.api.db.Metadata.REMOVE;
 import static org.briarproject.bramble.api.identity.AuthorConstants.MAX_AUTHOR_NAME_LENGTH;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
@@ -66,7 +67,6 @@ import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERE
 import static org.briarproject.bramble.api.sync.validation.MessageState.INVALID;
 import static org.briarproject.bramble.api.sync.validation.MessageState.PENDING;
 import static org.briarproject.bramble.api.sync.validation.MessageState.UNKNOWN;
-import static org.briarproject.bramble.db.Database.TIMER_NOT_STARTED;
 import static org.briarproject.bramble.db.DatabaseConstants.DB_SETTINGS_NAMESPACE;
 import static org.briarproject.bramble.db.DatabaseConstants.LAST_COMPACTED_KEY;
 import static org.briarproject.bramble.db.DatabaseConstants.MAX_COMPACTION_INTERVAL_MS;

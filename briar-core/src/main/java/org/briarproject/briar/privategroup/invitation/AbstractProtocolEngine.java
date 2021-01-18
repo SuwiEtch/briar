@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import static java.lang.Math.max;
-import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.privategroup.invitation.MessageType.ABORT;
 import static org.briarproject.briar.privategroup.invitation.MessageType.INVITE;
 import static org.briarproject.briar.privategroup.invitation.MessageType.JOIN;

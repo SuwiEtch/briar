@@ -28,9 +28,11 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.INVALID;
 import static org.briarproject.bramble.api.sync.validation.MessageState.PENDING;
@@ -63,10 +65,12 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 	private final MessageId messageId2 = message2.getId();
 
 	private final Metadata metadata = new Metadata();
-	private final MessageContext validResult = new MessageContext(metadata);
+	private final MessageContext validResult =
+			new MessageContext(metadata, emptyList(), NO_AUTO_DELETE_TIMER);
 	private final ContactId contactId = getContactId();
 	private final MessageContext validResultWithDependencies =
-			new MessageContext(metadata, singletonList(messageId1));
+			new MessageContext(metadata, singletonList(messageId1),
+					NO_AUTO_DELETE_TIMER);
 
 	private ValidationManagerImpl vm;
 
@@ -113,6 +117,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn1, messageId);
 			will(returnValue(emptyMap()));
@@ -169,6 +175,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn, messageId);
 			will(returnValue(singletonMap(messageId2, PENDING)));
@@ -189,6 +197,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message2, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId2, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId2);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn1, messageId2);
 			will(returnValue(emptyMap()));
@@ -254,6 +264,9 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			will(returnValue(emptyMap()));
 			// Share message
 			oneOf(db).setMessageShared(txn1, messageId);
+			// Start auto-delete timer, if any
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Share dependencies
 			oneOf(db).transaction(with(false), withDbRunnable(txn2));
 			oneOf(db).setMessageShared(txn2, messageId1);
@@ -369,6 +382,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn1, messageId);
 			will(returnValue(emptyMap()));
@@ -434,6 +449,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn1, messageId);
 			will(returnValue(emptyMap()));
@@ -604,6 +621,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// The message has two pending dependents: 1 and 2
 			oneOf(db).getMessageDependents(txn1, messageId);
 			will(returnValue(twoDependents));
@@ -624,6 +643,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn2, message1, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn2, messageId1, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn2, messageId1);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Message 1 has one pending dependent: 3
 			oneOf(db).getMessageDependents(txn2, messageId1);
 			will(returnValue(singletonMap(messageId3, PENDING)));
@@ -644,6 +665,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn3, message2, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn3, messageId2, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn3, messageId2);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Message 2 has one pending dependent: 3 (same dependent as 1)
 			oneOf(db).getMessageDependents(txn3, messageId2);
 			will(returnValue(singletonMap(messageId3, PENDING)));
@@ -663,6 +686,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			// Deliver message 3
 			oneOf(hook).incomingMessage(txn4, message3, metadata);
 			oneOf(db).setMessageState(txn4, messageId3, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn4, messageId3);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Message 3 has one pending dependent: 4
 			oneOf(db).getMessageDependents(txn4, messageId3);
 			will(returnValue(singletonMap(messageId4, PENDING)));
@@ -687,6 +712,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn6, message4, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn6, messageId4, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn6, messageId4);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Message 4 has no pending dependents
 			oneOf(db).getMessageDependents(txn6, messageId4);
 			will(returnValue(emptyMap()));
@@ -719,6 +746,8 @@ public class ValidationManagerImplTest extends BrambleMockTestCase {
 			oneOf(hook).incomingMessage(txn1, message, metadata);
 			will(returnValue(false));
 			oneOf(db).setMessageState(txn1, messageId, DELIVERED);
+			oneOf(db).startAutoDeleteTimer(txn1, messageId);
+			will(returnValue(NO_AUTO_DELETE_TIMER));
 			// Get any pending dependents
 			oneOf(db).getMessageDependents(txn1, messageId);
 			will(returnValue(singletonMap(messageId1, PENDING)));

@@ -13,6 +13,7 @@ import org.briarproject.bramble.api.crypto.SignaturePrivateKey;
 import org.briarproject.bramble.api.crypto.SignaturePublicKey;
 import org.briarproject.bramble.api.db.DataTooNewException;
 import org.briarproject.bramble.api.db.DataTooOldException;
+import org.briarproject.bramble.api.db.DatabaseComponent;
 import org.briarproject.bramble.api.db.DbClosedException;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.db.MessageDeletedException;
@@ -3375,7 +3376,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
-			if (affected == 0) return TIMER_NOT_STARTED;
+			if (affected == 0) return DatabaseComponent.TIMER_NOT_STARTED;
 			sql = "SELECT autoDeleteDeadline FROM messages"
 					+ " WHERE messageId = ?";
 			ps = txn.prepareStatement(sql);

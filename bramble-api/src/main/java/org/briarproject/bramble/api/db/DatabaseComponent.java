@@ -48,6 +48,12 @@ public interface DatabaseComponent extends TransactionManager {
 	long NO_AUTO_DELETE_DEADLINE = -1;
 
 	/**
+	 * Return value for {@link #startAutoDeleteTimer(Transaction, MessageId)}
+	 * if the auto-delete timer was not started.
+	 */
+	long TIMER_NOT_STARTED = -1;
+
+	/**
 	 * Opens the database and returns true if the database already existed.
 	 *
 	 * @throws DataTooNewException if the data uses a newer schema than the
@@ -628,6 +634,16 @@ public interface DatabaseComponent extends TransactionManager {
 	 */
 	void setTransportKeysActive(Transaction txn, TransportId t, KeySetId k)
 			throws DbException;
+
+	/**
+	 * Starts the auto-delete timer for the given message, if a timer duration
+	 * has been set and the timer has not already been started.
+	 *
+	 * @return The auto-delete deadline, or {@link #TIMER_NOT_STARTED} if no
+	 * timer duration has been set for this message or its timer has already
+	 * been started.
+	 */
+	long startAutoDeleteTimer(Transaction txn, MessageId m) throws DbException;
 
 	/**
 	 * Stores the given transport keys, deleting any keys they have replaced.

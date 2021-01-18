@@ -14,4 +14,9 @@ public interface AutoDeleteConstants {
 	 * The maximum valid auto-delete timer duration in milliseconds.
 	 */
 	long MAX_AUTO_DELETE_TIMER_MS = DAYS.toMillis(365);
+
+	/**
+	 * Placeholder value indicating that a message has no auto-delete timer.
+	 */
+	long NO_AUTO_DELETE_TIMER = -1;
 }

@@ -1,6 +1,7 @@
 package org.briarproject.briar.conversation;
 
 import org.briarproject.bramble.api.FormatException;
+import org.briarproject.bramble.api.autodelete.AutoDeleteConstants;
 import org.briarproject.bramble.api.client.ClientHelper;
 import org.briarproject.bramble.api.client.ContactGroupFactory;
 import org.briarproject.bramble.api.contact.Contact;
@@ -86,7 +87,8 @@ class ConversationAutoDeleteManagerImpl
 			Group g = getGroup(db.getContact(txn, c));
 			BdfDictionary meta =
 					clientHelper.getGroupMetadataAsDictionary(txn, g.getId());
-			return meta.getLong(GROUP_KEY_TIMER, NO_AUTO_DELETE_TIMER);
+			return meta.getLong(GROUP_KEY_TIMER,
+					AutoDeleteConstants.NO_AUTO_DELETE_TIMER);
 		} catch (FormatException e) {
 			throw new DbException(e);
 		}
@@ -99,7 +101,8 @@ class ConversationAutoDeleteManagerImpl
 			Group g = getGroup(db.getContact(txn, c));
 			BdfDictionary meta =
 					clientHelper.getGroupMetadataAsDictionary(txn, g.getId());
-			long timer = meta.getLong(GROUP_KEY_TIMER, NO_AUTO_DELETE_TIMER);
+			long timer = meta.getLong(GROUP_KEY_TIMER,
+					AutoDeleteConstants.NO_AUTO_DELETE_TIMER);
 			if (LOG.isLoggable(INFO)) {
 				LOG.info("Sending message with auto-delete timer " + timer);
 			}
@@ -122,7 +125,8 @@ class ConversationAutoDeleteManagerImpl
 			Group g = getGroup(db.getContact(txn, c));
 			BdfDictionary meta =
 					clientHelper.getGroupMetadataAsDictionary(txn, g.getId());
-			long oldTimer = meta.getLong(GROUP_KEY_TIMER, NO_AUTO_DELETE_TIMER);
+			long oldTimer = meta.getLong(GROUP_KEY_TIMER,
+					AutoDeleteConstants.NO_AUTO_DELETE_TIMER);
 			if (timer == oldTimer) return;
 			if (LOG.isLoggable(INFO)) {
 				LOG.info("Setting auto-delete timer to " + timer);
@@ -182,7 +186,7 @@ class ConversationAutoDeleteManagerImpl
 	}
 
 	private void validateTimer(long timer) {
-		if (timer != NO_AUTO_DELETE_TIMER &&
+		if (timer != AutoDeleteConstants.NO_AUTO_DELETE_TIMER &&
 				(timer < MIN_AUTO_DELETE_TIMER_MS ||
 						timer > MAX_AUTO_DELETE_TIMER_MS)) {
 			throw new IllegalArgumentException();

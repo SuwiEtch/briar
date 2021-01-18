@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.test.TestUtils.getAuthor;
 import static org.briarproject.bramble.test.TestUtils.getContact;
@@ -53,7 +54,6 @@ import static org.briarproject.bramble.test.TestUtils.getMessage;
 import static org.briarproject.bramble.test.TestUtils.getRandomBytes;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.GROUP_SALT_LENGTH;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.MAX_GROUP_NAME_LENGTH;
 import static org.briarproject.briar.api.privategroup.invitation.GroupInvitationManager.CLIENT_ID;

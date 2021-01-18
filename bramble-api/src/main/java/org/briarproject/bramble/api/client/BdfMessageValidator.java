@@ -52,7 +52,8 @@ public abstract class BdfMessageValidator implements MessageValidator {
 			BdfList bodyList = clientHelper.toList(m.getBody());
 			BdfMessageContext result = validateMessage(m, g, bodyList);
 			Metadata meta = metadataEncoder.encode(result.getDictionary());
-			return new MessageContext(meta, result.getDependencies());
+			return new MessageContext(meta, result.getDependencies(),
+					result.getAutoDeleteTimer());
 		} catch (FormatException e) {
 			throw new InvalidMessageException(e);
 		}

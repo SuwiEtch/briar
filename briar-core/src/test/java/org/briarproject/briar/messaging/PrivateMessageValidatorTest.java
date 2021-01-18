@@ -20,8 +20,10 @@ import org.junit.Test;
 
 import java.io.InputStream;
 
+import static java.util.Collections.emptyList;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.transport.TransportConstants.MAX_CLOCK_DIFFERENCE;
 import static org.briarproject.bramble.test.TestUtils.getClientId;
 import static org.briarproject.bramble.test.TestUtils.getGroup;
@@ -180,8 +182,9 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 	@Test
 	public void testAcceptsNullTextWithAttachmentsForPrivateMessage()
 			throws Exception {
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, null,
-				BdfList.of(attachmentHeader)), noTextMeta);
+		BdfList body =
+				BdfList.of(PRIVATE_MESSAGE, null, BdfList.of(attachmentHeader));
+		testAcceptsPrivateMessage(body, noTextMeta, NO_AUTO_DELETE_TIMER);
 	}
 
 	@Test(expected = InvalidMessageException.class)
@@ -201,14 +204,16 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 
 	@Test
 	public void testAcceptsMaxLengthTextForPrivateMessage() throws Exception {
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, text,
-				new BdfList()), noAttachmentsMeta);
+		BdfList body = BdfList.of(PRIVATE_MESSAGE, text, new BdfList());
+		testAcceptsPrivateMessage(body, noAttachmentsMeta,
+				NO_AUTO_DELETE_TIMER);
 	}
 
 	@Test
 	public void testAcceptsMinLengthTextForPrivateMessage() throws Exception {
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, "",
-				new BdfList()), noAttachmentsMeta);
+		BdfList body = BdfList.of(PRIVATE_MESSAGE, "", new BdfList());
+		testAcceptsPrivateMessage(body, noAttachmentsMeta,
+				NO_AUTO_DELETE_TIMER);
 	}
 
 	@Test(expected = InvalidMessageException.class)
@@ -245,8 +250,9 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 		BdfDictionary maxAttachmentsMeta = new BdfDictionary(noAttachmentsMeta);
 		maxAttachmentsMeta.put(MSG_KEY_ATTACHMENT_HEADERS, attachmentList);
 
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, text,
-				attachmentList), maxAttachmentsMeta);
+		BdfList body = BdfList.of(PRIVATE_MESSAGE, text, attachmentList);
+		testAcceptsPrivateMessage(body, maxAttachmentsMeta,
+				NO_AUTO_DELETE_TIMER);
 	}
 
 	@Test(expected = InvalidMessageException.class)
@@ -383,7 +389,9 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 		expectParseList(BdfList.of(ATTACHMENT, contentType));
 		expectEncodeMetadata(attachmentMeta);
 
-		validator.validateMessage(message, group);
+		MessageContext result = validator.validateMessage(message, group);
+		assertEquals(emptyList(), result.getDependencies());
+		assertEquals(NO_AUTO_DELETE_TIMER, result.getAutoDeleteTimer());
 	}
 
 	@Test(expected = InvalidMessageException.class)
@@ -396,8 +404,9 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 
 	@Test
 	public void testAcceptsNullTimerForPrivateMessage() throws Exception {
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, text,
-				new BdfList(), null), noAttachmentsMeta);
+		BdfList body = BdfList.of(PRIVATE_MESSAGE, text, new BdfList(), null);
+		testAcceptsPrivateMessage(body, noAttachmentsMeta,
+				NO_AUTO_DELETE_TIMER);
 	}
 
 	@Test(expected = InvalidMessageException.class)
@@ -420,20 +429,12 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 
 	@Test
 	public void testAcceptsMinTimerForPrivateMessage() throws Exception {
-		BdfDictionary minTimerMeta = new BdfDictionary(noAttachmentsMeta);
-		minTimerMeta.put(MSG_KEY_AUTO_DELETE_TIMER, MIN_AUTO_DELETE_TIMER_MS);
-
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, text,
-				new BdfList(), MIN_AUTO_DELETE_TIMER_MS), minTimerMeta);
+		testAcceptsTimerForPrivateMessage(MIN_AUTO_DELETE_TIMER_MS);
 	}
 
 	@Test
 	public void testAcceptsMaxTimerForPrivateMessage() throws Exception {
-		BdfDictionary maxTimerMeta = new BdfDictionary(noAttachmentsMeta);
-		maxTimerMeta.put(MSG_KEY_AUTO_DELETE_TIMER, MAX_AUTO_DELETE_TIMER_MS);
-
-		testAcceptsPrivateMessage(BdfList.of(PRIVATE_MESSAGE, text,
-				new BdfList(), MAX_AUTO_DELETE_TIMER_MS), maxTimerMeta);
+		testAcceptsTimerForPrivateMessage(MAX_AUTO_DELETE_TIMER_MS);
 	}
 
 	private void testRejectsLegacyMessage(BdfList body) throws Exception {
@@ -451,7 +452,8 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 		expectEncodeMetadata(legacyMeta);
 
 		MessageContext result = validator.validateMessage(message, group);
-		assertEquals(0, result.getDependencies().size());
+		assertEquals(emptyList(), result.getDependencies());
+		assertEquals(NO_AUTO_DELETE_TIMER, result.getAutoDeleteTimer());
 	}
 
 	private void testRejectsPrivateMessage(BdfList body) throws Exception {
@@ -462,15 +464,25 @@ public class PrivateMessageValidatorTest extends BrambleMockTestCase {
 		validator.validateMessage(message, group);
 	}
 
-	private void testAcceptsPrivateMessage(BdfList body, BdfDictionary meta)
-			throws Exception {
+	private void testAcceptsPrivateMessage(BdfList body, BdfDictionary meta,
+			long timer) throws Exception {
 		expectCheckTimestamp(now);
 		expectParseList(body);
 		expectReadEof(true);
 		expectEncodeMetadata(meta);
 
 		MessageContext result = validator.validateMessage(message, group);
-		assertEquals(0, result.getDependencies().size());
+		assertEquals(emptyList(), result.getDependencies());
+		assertEquals(timer, result.getAutoDeleteTimer());
+	}
+
+	private void testAcceptsTimerForPrivateMessage(long timer)
+			throws Exception {
+		BdfDictionary timerMeta = new BdfDictionary(noAttachmentsMeta);
+		timerMeta.put(MSG_KEY_AUTO_DELETE_TIMER, timer);
+
+		BdfList body = BdfList.of(PRIVATE_MESSAGE, text, new BdfList(), timer);
+		testAcceptsPrivateMessage(body, timerMeta, timer);
 	}
 
 	private void testRejectsAttachment(BdfList descriptor) throws Exception {

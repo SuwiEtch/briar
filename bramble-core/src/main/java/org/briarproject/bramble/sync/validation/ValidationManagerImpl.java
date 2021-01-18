@@ -40,6 +40,7 @@ import javax.inject.Inject;
 
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.api.sync.validation.MessageState.INVALID;
 import static org.briarproject.bramble.api.sync.validation.MessageState.PENDING;
@@ -274,6 +275,10 @@ class ValidationManagerImpl implements ValidationManager, Service,
 				} else {
 					Metadata meta = context.getMetadata();
 					db.mergeMessageMetadata(txn, id, meta);
+					long autoDeleteTimer = context.getAutoDeleteTimer();
+					if (autoDeleteTimer != NO_AUTO_DELETE_TIMER) {
+						db.setAutoDeleteDuration(txn, id, autoDeleteTimer);
+					}
 					if (allDelivered) {
 						DeliveryResult result =
 								deliverMessage(txn, m, c, majorVersion, meta);
@@ -320,6 +325,7 @@ class ValidationManagerImpl implements ValidationManager, Service,
 			}
 		}
 		db.setMessageState(txn, m.getId(), DELIVERED);
+		db.startAutoDeleteTimer(txn, m.getId());
 		return new DeliveryResult(true, shareMsg);
 	}
 
