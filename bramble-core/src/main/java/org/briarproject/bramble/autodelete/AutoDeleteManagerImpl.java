@@ -38,6 +38,7 @@ import javax.inject.Inject;
 
 import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
@@ -48,6 +49,11 @@ import static org.briarproject.bramble.util.LogUtils.logException;
 @NotNullByDefault
 class AutoDeleteManagerImpl
 		implements AutoDeleteManager, OpenDatabaseHook, EventListener {
+
+	/**
+	 * The minimum interval between deletion tasks in milliseconds.
+	 */
+	private static final long MIN_TASK_INTERVAL_MS = SECONDS.toMillis(10);
 
 	private static final Logger LOG =
 			getLogger(AutoDeleteManagerImpl.class.getName());
@@ -62,6 +68,8 @@ class AutoDeleteManagerImpl
 
 	@GuardedBy("lock")
 	private long nextDeadline = NO_AUTO_DELETE_DEADLINE;
+	@GuardedBy("lock")
+	private long lastTaskTime = 0;
 	@GuardedBy("lock")
 	@Nullable
 	private Cancellable nextCheck = null;
@@ -99,15 +107,17 @@ class AutoDeleteManagerImpl
 		synchronized (lock) {
 			if (nextDeadline == NO_AUTO_DELETE_DEADLINE ||
 					deadline < nextDeadline) {
+				long now = clock.currentTimeMillis();
 				nextDeadline = deadline;
 				if (nextCheck != null) nextCheck.cancel();
-				nextCheck = scheduleDeletion(deadline);
+				nextCheck = scheduleDeletion(deadline, lastTaskTime, now);
 			}
 		}
 	}
 
-	private Cancellable scheduleDeletion(long deadline) {
-		long now = clock.currentTimeMillis();
+	private Cancellable scheduleDeletion(long deadline, long lastTaskTime,
+			long now) {
+		deadline = max(lastTaskTime + MIN_TASK_INTERVAL_MS, deadline);
 		long delay = max(0, deadline - now);
 		if (LOG.isLoggable(INFO)) {
 			LOG.info("Scheduling auto-delete task in " + delay + " ms");
@@ -160,10 +170,12 @@ class AutoDeleteManagerImpl
 			txn.attach(new MessagesAutoDeletedEvent(e.getKey(), e.getValue()));
 		}
 		long deadline = db.getNextAutoDeleteDeadline(txn);
+		long now = clock.currentTimeMillis();
 		synchronized (lock) {
+			lastTaskTime = now;
 			nextDeadline = deadline;
 			if (deadline == NO_AUTO_DELETE_DEADLINE) nextCheck = null;
-			else nextCheck = scheduleDeletion(deadline);
+			else nextCheck = scheduleDeletion(deadline, lastTaskTime, now);
 		}
 	}
 }
