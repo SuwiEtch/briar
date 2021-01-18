@@ -1,6 +1,7 @@
 package org.briarproject.bramble.autodelete;
 
 import org.briarproject.bramble.api.autodelete.AutoDeleteManager;
+import org.briarproject.bramble.api.event.EventBus;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
 
 import javax.inject.Inject;
@@ -20,8 +21,9 @@ public class AutoDeleteModule {
 	@Provides
 	@Singleton
 	AutoDeleteManager getAutoDeleteManager(LifecycleManager lifecycleManager,
-			AutoDeleteManagerImpl autoDeleteManager) {
+			EventBus eventBus, AutoDeleteManagerImpl autoDeleteManager) {
 		lifecycleManager.registerOpenDatabaseHook(autoDeleteManager);
+		eventBus.addListener(autoDeleteManager);
 		return autoDeleteManager;
 	}
 }

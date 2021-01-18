@@ -38,6 +38,7 @@ import javax.inject.Inject;
 
 import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.api.db.DatabaseComponent.NO_AUTO_DELETE_DEADLINE;
@@ -108,6 +109,9 @@ class AutoDeleteManagerImpl
 	private Cancellable scheduleDeletion(long deadline) {
 		long now = clock.currentTimeMillis();
 		long delay = max(0, deadline - now);
+		if (LOG.isLoggable(INFO)) {
+			LOG.info("Scheduling auto-delete task in " + delay + " ms");
+		}
 		return taskScheduler.schedule(this::deleteMessages, dbExecutor,
 				delay, MILLISECONDS);
 	}
@@ -124,6 +128,7 @@ class AutoDeleteManagerImpl
 		Map<GroupId, ClientMajorVersion> clientCache = new HashMap<>();
 		Map<GroupId, Collection<MessageId>> deleted = new HashMap<>();
 		Map<MessageId, GroupId> ids = db.getMessagesToDelete(txn);
+		if (LOG.isLoggable(INFO)) LOG.info(ids.size() + " messages to delete");
 		for (Entry<MessageId, GroupId> e : ids.entrySet()) {
 			MessageId m = e.getKey();
 			GroupId g = e.getValue();
@@ -146,6 +151,9 @@ class AutoDeleteManagerImpl
 					deleted.put(g, messageIds);
 				}
 				messageIds.add(m);
+			} else {
+				// TODO: Do something about this
+				LOG.info("Message was not deleted");
 			}
 		}
 		for (Entry<GroupId, Collection<MessageId>> e : deleted.entrySet()) {
