@@ -1,4 +1,4 @@
-package org.briarproject.bramble.api.sync.event;
+package org.briarproject.bramble.api.autodelete.event;
 
 import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;

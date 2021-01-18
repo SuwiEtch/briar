@@ -2,6 +2,8 @@ package org.briarproject.bramble.autodelete;
 
 import org.briarproject.bramble.api.autodelete.AutoDeleteHook;
 import org.briarproject.bramble.api.autodelete.AutoDeleteManager;
+import org.briarproject.bramble.api.autodelete.event.AutoDeleteTimerStartedEvent;
+import org.briarproject.bramble.api.autodelete.event.MessagesAutoDeletedEvent;
 import org.briarproject.bramble.api.db.DatabaseComponent;
 import org.briarproject.bramble.api.db.DatabaseExecutor;
 import org.briarproject.bramble.api.db.DbException;
@@ -15,12 +17,13 @@ import org.briarproject.bramble.api.sync.ClientId;
 import org.briarproject.bramble.api.sync.Group;
 import org.briarproject.bramble.api.sync.GroupId;
 import org.briarproject.bramble.api.sync.MessageId;
-import org.briarproject.bramble.api.sync.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.api.system.TaskScheduler;
 import org.briarproject.bramble.api.system.TaskScheduler.Cancellable;
 import org.briarproject.bramble.api.versioning.ClientMajorVersion;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -119,8 +122,10 @@ class AutoDeleteManagerImpl
 
 	private void deleteMessages(Transaction txn) throws DbException {
 		Map<GroupId, ClientMajorVersion> clientCache = new HashMap<>();
+		Map<GroupId, Collection<MessageId>> deleted = new HashMap<>();
 		Map<MessageId, GroupId> ids = db.getMessagesToDelete(txn);
 		for (Entry<MessageId, GroupId> e : ids.entrySet()) {
+			MessageId m = e.getKey();
 			GroupId g = e.getValue();
 			ClientMajorVersion cv = clientCache.get(g);
 			if (cv == null) {
@@ -134,9 +139,17 @@ class AutoDeleteManagerImpl
 				if (LOG.isLoggable(WARNING)) {
 					LOG.warning("No auto-delete hook for " + cv);
 				}
-			} else {
-				hook.deleteMessage(txn, g, e.getKey());
+			} else if (hook.deleteMessage(txn, g, m)) {
+				Collection<MessageId> messageIds = deleted.get(g);
+				if (messageIds == null) {
+					messageIds = new ArrayList<>();
+					deleted.put(g, messageIds);
+				}
+				messageIds.add(m);
 			}
+		}
+		for (Entry<GroupId, Collection<MessageId>> e : deleted.entrySet()) {
+			txn.attach(new MessagesAutoDeletedEvent(e.getKey(), e.getValue()));
 		}
 		long deadline = db.getNextAutoDeleteDeadline(txn);
 		synchronized (lock) {

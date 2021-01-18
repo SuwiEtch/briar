@@ -513,11 +513,11 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 	}
 
 	@Override
-	public void deleteMessage(Transaction txn, GroupId g, MessageId m)
+	public boolean deleteMessage(Transaction txn, GroupId g, MessageId m)
 			throws DbException {
 		ContactId c = getContactId(txn, g);
 		// TODO: Message will not be deleted if there are missing attachments
-		deleteMessages(txn, c, singleton(m));
+		return deleteMessages(txn, c, singleton(m)).allDeleted();
 	}
 
 	private void recalculateGroupCount(Transaction txn, GroupId g)

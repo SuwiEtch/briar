@@ -1,5 +1,6 @@
 package org.briarproject.bramble.db;
 
+import org.briarproject.bramble.api.autodelete.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.contact.Contact;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.contact.PendingContactId;
@@ -37,7 +38,6 @@ import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.bramble.api.sync.MessageStatus;
 import org.briarproject.bramble.api.sync.Offer;
 import org.briarproject.bramble.api.sync.Request;
-import org.briarproject.bramble.api.sync.event.AutoDeleteTimerStartedEvent;
 import org.briarproject.bramble.api.sync.event.GroupAddedEvent;
 import org.briarproject.bramble.api.sync.event.GroupRemovedEvent;
 import org.briarproject.bramble.api.sync.event.GroupVisibilityUpdatedEvent;

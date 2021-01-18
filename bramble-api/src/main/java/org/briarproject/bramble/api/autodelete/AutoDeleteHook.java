@@ -9,6 +9,6 @@ import org.briarproject.bramble.api.sync.MessageId;
 @NotNullByDefault
 public interface AutoDeleteHook {
 
-	void deleteMessage(Transaction txn, GroupId g, MessageId m)
+	boolean deleteMessage(Transaction txn, GroupId g, MessageId m)
 			throws DbException;
 }
