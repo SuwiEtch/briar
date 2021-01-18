@@ -1,7 +1,7 @@
 package org.briarproject.briar;
 
-import org.briarproject.briar.autodelete.AutoDeleteModule;
 import org.briarproject.briar.blog.BlogModule;
+import org.briarproject.briar.conversation.ConversationModule;
 import org.briarproject.briar.feed.FeedModule;
 import org.briarproject.briar.forum.ForumModule;
 import org.briarproject.briar.introduction.IntroductionModule;
@@ -12,9 +12,9 @@ import org.briarproject.briar.sharing.SharingModule;
 
 public interface BriarCoreEagerSingletons {
 
-	void inject(AutoDeleteModule.EagerSingletons init);
-
 	void inject(BlogModule.EagerSingletons init);
+
+	void inject(ConversationModule.EagerSingletons init);
 
 	void inject(FeedModule.EagerSingletons init);
 
@@ -33,8 +33,8 @@ public interface BriarCoreEagerSingletons {
 	class Helper {
 
 		public static void injectEagerSingletons(BriarCoreEagerSingletons c) {
-			c.inject(new AutoDeleteModule.EagerSingletons());
 			c.inject(new BlogModule.EagerSingletons());
+			c.inject(new ConversationModule.EagerSingletons());
 			c.inject(new FeedModule.EagerSingletons());
 			c.inject(new ForumModule.EagerSingletons());
 			c.inject(new GroupInvitationModule.EagerSingletons());

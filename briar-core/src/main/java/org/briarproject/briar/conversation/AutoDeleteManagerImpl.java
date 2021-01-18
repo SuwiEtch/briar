@@ -1,4 +1,4 @@
-package org.briarproject.briar.autodelete;
+package org.briarproject.briar.conversation;
 
 import org.briarproject.bramble.api.FormatException;
 import org.briarproject.bramble.api.client.ClientHelper;
@@ -15,8 +15,8 @@ import org.briarproject.bramble.api.lifecycle.LifecycleManager.OpenDatabaseHook;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.sync.Group;
 import org.briarproject.bramble.api.sync.GroupFactory;
-import org.briarproject.briar.api.autodelete.AutoDeleteManager;
-import org.briarproject.briar.api.autodelete.event.AutoDeleteTimerMirroredEvent;
+import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.event.AutoDeleteTimerMirroredEvent;
 
 import java.util.logging.Logger;
 
@@ -27,10 +27,10 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMER;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.NO_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.NO_PREVIOUS_TIMER;
 
 @Immutable
 @NotNullByDefault

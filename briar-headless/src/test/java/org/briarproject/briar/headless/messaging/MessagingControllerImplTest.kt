@@ -22,8 +22,8 @@ import org.briarproject.bramble.api.sync.event.MessagesSentEvent
 import org.briarproject.bramble.test.ImmediateExecutor
 import org.briarproject.bramble.test.TestUtils.getRandomId
 import org.briarproject.bramble.util.StringUtils.getRandomString
-import org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER
 import org.briarproject.briar.api.client.SessionId
+import org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER
 import org.briarproject.briar.api.conversation.DeletionResult
 import org.briarproject.briar.api.introduction.IntroductionRequest
 import org.briarproject.briar.api.messaging.MessagingConstants.MAX_PRIVATE_MESSAGE_TEXT_LENGTH

@@ -1,4 +1,4 @@
-package org.briarproject.briar.api.autodelete.event;
+package org.briarproject.briar.api.conversation.event;
 
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.event.Event;

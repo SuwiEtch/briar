@@ -1,4 +1,4 @@
-package org.briarproject.briar.autodelete;
+package org.briarproject.briar.conversation;
 
 interface AutoDeleteConstants {
 

@@ -2,9 +2,9 @@ package org.briarproject.briar.introduction;
 
 import org.briarproject.bramble.BrambleCoreModule;
 import org.briarproject.bramble.test.BrambleCoreIntegrationTestModule;
-import org.briarproject.briar.autodelete.AutoDeleteModule;
 import org.briarproject.briar.blog.BlogModule;
 import org.briarproject.briar.client.BriarClientModule;
+import org.briarproject.briar.conversation.ConversationModule;
 import org.briarproject.briar.forum.ForumModule;
 import org.briarproject.briar.messaging.MessagingModule;
 import org.briarproject.briar.privategroup.PrivateGroupModule;
@@ -18,11 +18,11 @@ import dagger.Component;
 
 @Singleton
 @Component(modules = {
-		AutoDeleteModule.class,
 		BrambleCoreIntegrationTestModule.class,
 		BrambleCoreModule.class,
 		BlogModule.class,
 		BriarClientModule.class,
+		ConversationModule.class,
 		ForumModule.class,
 		GroupInvitationModule.class,
 		IntroductionModule.class,

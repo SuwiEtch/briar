@@ -1,8 +1,8 @@
 package org.briarproject.briar;
 
-import org.briarproject.briar.autodelete.AutoDeleteModule;
 import org.briarproject.briar.blog.BlogModule;
 import org.briarproject.briar.client.BriarClientModule;
+import org.briarproject.briar.conversation.ConversationModule;
 import org.briarproject.briar.feed.DnsModule;
 import org.briarproject.briar.feed.FeedModule;
 import org.briarproject.briar.forum.ForumModule;
@@ -16,11 +16,11 @@ import org.briarproject.briar.test.TestModule;
 import dagger.Module;
 
 @Module(includes = {
-		AutoDeleteModule.class,
 		BlogModule.class,
 		BriarClientModule.class,
-		FeedModule.class,
+		ConversationModule.class,
 		DnsModule.class,
+		FeedModule.class,
 		ForumModule.class,
 		GroupInvitationModule.class,
 		IntroductionModule.class,

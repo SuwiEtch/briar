@@ -1,4 +1,4 @@
-package org.briarproject.briar.autodelete;
+package org.briarproject.briar.conversation;
 
 import org.briarproject.bramble.api.client.ClientHelper;
 import org.briarproject.bramble.api.client.ContactGroupFactory;
@@ -13,7 +13,7 @@ import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.sync.Group;
 import org.briarproject.bramble.api.sync.GroupFactory;
 import org.briarproject.bramble.test.BrambleMockTestCase;
-import org.briarproject.briar.api.autodelete.event.AutoDeleteTimerMirroredEvent;
+import org.briarproject.briar.api.conversation.event.AutoDeleteTimerMirroredEvent;
 import org.jmock.Expectations;
 import org.junit.Test;
 
@@ -23,13 +23,13 @@ import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AU
 import static org.briarproject.bramble.api.client.ContactGroupConstants.GROUP_KEY_CONTACT_ID;
 import static org.briarproject.bramble.test.TestUtils.getContact;
 import static org.briarproject.bramble.test.TestUtils.getGroup;
-import static org.briarproject.briar.api.autodelete.AutoDeleteManager.CLIENT_ID;
-import static org.briarproject.briar.api.autodelete.AutoDeleteManager.MAJOR_VERSION;
-import static org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMER;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
-import static org.briarproject.briar.autodelete.AutoDeleteConstants.NO_PREVIOUS_TIMER;
+import static org.briarproject.briar.api.conversation.AutoDeleteManager.CLIENT_ID;
+import static org.briarproject.briar.api.conversation.AutoDeleteManager.MAJOR_VERSION;
+import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMER;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
+import static org.briarproject.briar.conversation.AutoDeleteConstants.NO_PREVIOUS_TIMER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

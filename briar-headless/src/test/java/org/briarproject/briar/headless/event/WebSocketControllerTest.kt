@@ -10,8 +10,8 @@ import org.briarproject.bramble.api.identity.AuthorInfo
 import org.briarproject.bramble.api.identity.AuthorInfo.Status.VERIFIED
 import org.briarproject.bramble.test.ImmediateExecutor
 import org.briarproject.bramble.test.TestUtils.getRandomId
-import org.briarproject.briar.api.autodelete.AutoDeleteManager.NO_AUTO_DELETE_TIMER
 import org.briarproject.briar.api.client.SessionId
+import org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER
 import org.briarproject.briar.api.introduction.IntroductionRequest
 import org.briarproject.briar.api.introduction.event.IntroductionRequestReceivedEvent
 import org.briarproject.briar.api.messaging.PrivateMessageHeader
