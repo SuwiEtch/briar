@@ -1,6 +1,7 @@
 package org.briarproject.briar.messaging;
 
 import org.briarproject.bramble.api.FormatException;
+import org.briarproject.bramble.api.autodelete.AutoDeleteHook;
 import org.briarproject.bramble.api.client.ClientHelper;
 import org.briarproject.bramble.api.client.ContactGroupFactory;
 import org.briarproject.bramble.api.contact.Contact;
@@ -59,6 +60,7 @@ import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_BODY_LENGTH;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
@@ -82,7 +84,7 @@ import static org.briarproject.briar.messaging.MessagingConstants.MSG_KEY_TIMEST
 @NotNullByDefault
 class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 		ConversationClient, OpenDatabaseHook, ContactHook,
-		ClientVersioningHook {
+		ClientVersioningHook, AutoDeleteHook {
 
 	private final DatabaseComponent db;
 	private final ClientHelper clientHelper;
@@ -510,6 +512,14 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 		return result;
 	}
 
+	@Override
+	public void deleteMessage(Transaction txn, GroupId g, MessageId m)
+			throws DbException {
+		ContactId c = getContactId(txn, g);
+		// TODO: Message will not be deleted if there are missing attachments
+		deleteMessages(txn, c, singleton(m));
+	}
+
 	private void recalculateGroupCount(Transaction txn, GroupId g)
 			throws DbException {
 		BdfDictionary query = BdfDictionary.of(
@@ -535,5 +545,4 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 		}
 		messageTracker.resetGroupCount(txn, g, msgCount, unreadCount);
 	}
-
 }
