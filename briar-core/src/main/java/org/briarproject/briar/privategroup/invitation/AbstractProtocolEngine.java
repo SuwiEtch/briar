@@ -154,8 +154,8 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 			// Set auto-delete timer if manually accepting an invitation
 			long timer = NO_AUTO_DELETE_TIMER;
 			if (visibleInUi) {
-				timer = conversationAutoDeleteManager
-						.getAutoDeleteTimer(txn, c, localTimestamp);
+				timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn, c,
+						localTimestamp);
 			}
 			m = messageEncoder.encodeJoinMessage(s.getContactGroupId(),
 					s.getPrivateGroupId(), localTimestamp,

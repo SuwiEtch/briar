@@ -192,8 +192,8 @@ public class ConversationViewModel extends DbViewModel
 				logDuration(LOG, "Loading contact", start);
 				start = now();
 				long timer = db.transactionWithResult(true, txn ->
-						conversationAutoDeleteManager
-								.getAutoDeleteTimer(txn, contactId));
+						conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+								contactId));
 				autoDeleteTimer.postValue(timer);
 				logDuration(LOG, "Getting auto-delete timer", start);
 				start = now();
@@ -313,8 +313,7 @@ public class ConversationViewModel extends DbViewModel
 						timestamp, text, headers);
 			} else {
 				long timer = conversationAutoDeleteManager
-						.getAutoDeleteTimer(txn, c,
-								timestamp);
+						.getAutoDeleteTimer(txn, c, timestamp);
 				return privateMessageFactory.createPrivateMessage(groupId,
 						timestamp, text, headers, timer);
 			}

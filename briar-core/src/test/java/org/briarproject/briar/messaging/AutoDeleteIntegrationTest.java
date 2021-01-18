@@ -203,8 +203,8 @@ public class AutoDeleteIntegrationTest
 		return db.transactionWithResult(false, txn -> {
 			long timestamp = conversationManager
 					.getTimestampForOutgoingMessage(txn, contactId);
-			long timer = conversationAutoDeleteManager
-					.getAutoDeleteTimer(txn, contactId, timestamp);
+			long timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+					contactId, timestamp);
 			PrivateMessage m = factory.createPrivateMessage(groupId, timestamp,
 					"Hi!", emptyList(), timer);
 			messagingManager.addLocalMessage(txn, m);
