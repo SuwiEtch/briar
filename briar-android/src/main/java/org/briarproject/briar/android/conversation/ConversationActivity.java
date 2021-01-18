@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.briarproject.bramble.api.FeatureFlags;
 import org.briarproject.bramble.api.Pair;
+import org.briarproject.bramble.api.autodelete.event.MessagesAutoDeletedEvent;
 import org.briarproject.bramble.api.connection.ConnectionRegistry;
 import org.briarproject.bramble.api.contact.ContactId;
 import org.briarproject.bramble.api.contact.ContactManager;
@@ -701,6 +702,15 @@ public class ConversationActivity extends BriarActivity
 					viewModel.recheckFeaturesAndOnboarding(contactId);
 				}
 			}
+		} else if (e instanceof MessagesAutoDeletedEvent) {
+			MessagesAutoDeletedEvent m = (MessagesAutoDeletedEvent) e;
+			observeOnce(viewModel.getMessagingGroupId(), this, groupId -> {
+				if (m.getGroupId().equals(groupId)) {
+					LOG.info("Messages were auto-deleted");
+					// TODO: Remove the messages without reloading
+					reloadMessages();
+				}
+			});
 		}
 	}
 
@@ -816,11 +826,16 @@ public class ConversationActivity extends BriarActivity
 	private void reloadConversationAfterDeletingMessages(
 			DeletionResult result) {
 		runOnUiThreadUnlessDestroyed(() -> {
-			adapter.clear();
-			list.showProgressBar();  // otherwise clearing shows empty state
-			loadMessages();
+			reloadMessages();
 			if (!result.allDeleted()) showNotAllDeletedDialog(result);
 		});
+	}
+
+	@UiThread
+	private void reloadMessages() {
+		adapter.clear();
+		list.showProgressBar();  // otherwise clearing shows empty state
+		loadMessages();
 	}
 
 	private void showNotAllDeletedDialog(DeletionResult result) {

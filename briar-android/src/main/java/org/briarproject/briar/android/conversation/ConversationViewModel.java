@@ -384,6 +384,10 @@ public class ConversationViewModel extends DbViewModel
 		return contactName;
 	}
 
+	LiveData<GroupId> getMessagingGroupId() {
+		return messagingGroupId;
+	}
+
 	LiveData<PrivateMessageFormat> getPrivateMessageFormat() {
 		return privateMessageFormat;
 	}
