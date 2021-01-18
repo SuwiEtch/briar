@@ -273,7 +273,7 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 				db.setMessagePermanent(txn, a.getMessageId());
 			}
 			clientHelper.addLocalMessage(txn, m.getMessage(), meta, true,
-					false);
+					false, m.getAutoDeleteTimer());
 			messageTracker.trackOutgoingMessage(txn, m.getMessage());
 		} catch (FormatException e) {
 			throw new AssertionError(e);

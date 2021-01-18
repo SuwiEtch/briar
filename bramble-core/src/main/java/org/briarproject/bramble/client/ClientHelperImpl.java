@@ -41,6 +41,7 @@ import java.util.Map.Entry;
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 
+import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.bramble.api.client.ContactGroupConstants.GROUP_KEY_CONTACT_ID;
 import static org.briarproject.bramble.api.identity.Author.FORMAT_VERSION;
 import static org.briarproject.bramble.api.identity.AuthorConstants.MAX_AUTHOR_NAME_LENGTH;
@@ -98,6 +99,18 @@ class ClientHelperImpl implements ClientHelper {
 			throws DbException, FormatException {
 		db.addLocalMessage(txn, m, metadataEncoder.encode(metadata), shared,
 				temporary);
+	}
+
+	@Override
+	public void addLocalMessage(Transaction txn, Message m,
+			BdfDictionary metadata, boolean shared, boolean temporary,
+			long autoDeleteTimer)
+			throws DbException, FormatException {
+		db.addLocalMessage(txn, m, metadataEncoder.encode(metadata), shared,
+				temporary);
+		if (autoDeleteTimer != NO_AUTO_DELETE_TIMER) {
+			db.setAutoDeleteDuration(txn, m.getId(), autoDeleteTimer);
+		}
 	}
 
 	@Override

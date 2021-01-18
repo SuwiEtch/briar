@@ -29,6 +29,10 @@ public interface ClientHelper {
 			boolean shared, boolean temporary)
 			throws DbException, FormatException;
 
+	void addLocalMessage(Transaction txn, Message m, BdfDictionary metadata,
+			boolean shared, boolean temporary, long autoDeleteTimer)
+			throws DbException, FormatException;
+
 	Message createMessage(GroupId g, long timestamp, byte[] body);
 
 	Message createMessage(GroupId g, long timestamp, BdfList body)
@@ -125,12 +129,12 @@ public interface ClientHelper {
 	 * group.
 	 */
 	ContactId getContactId(Transaction txn, GroupId contactGroupId)
-		throws DbException, FormatException;
+			throws DbException, FormatException;
 
 	/**
 	 * Stores the given contact ID in the group metadata of the given contact
 	 * group.
 	 */
 	void setContactId(Transaction txn, GroupId contactGroupId, ContactId c)
-		throws DbException;
+			throws DbException;
 }
