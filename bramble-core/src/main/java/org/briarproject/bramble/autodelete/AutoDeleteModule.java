@@ -22,7 +22,7 @@ public class AutoDeleteModule {
 	@Singleton
 	AutoDeleteManager getAutoDeleteManager(LifecycleManager lifecycleManager,
 			EventBus eventBus, AutoDeleteManagerImpl autoDeleteManager) {
-		lifecycleManager.registerOpenDatabaseHook(autoDeleteManager);
+		lifecycleManager.registerService(autoDeleteManager);
 		eventBus.addListener(autoDeleteManager);
 		return autoDeleteManager;
 	}

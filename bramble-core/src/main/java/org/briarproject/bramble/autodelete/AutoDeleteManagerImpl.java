@@ -11,7 +11,8 @@ import org.briarproject.bramble.api.db.Transaction;
 import org.briarproject.bramble.api.event.Event;
 import org.briarproject.bramble.api.event.EventExecutor;
 import org.briarproject.bramble.api.event.EventListener;
-import org.briarproject.bramble.api.lifecycle.LifecycleManager.OpenDatabaseHook;
+import org.briarproject.bramble.api.lifecycle.Service;
+import org.briarproject.bramble.api.lifecycle.ServiceException;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.sync.ClientId;
 import org.briarproject.bramble.api.sync.Group;
@@ -48,12 +49,12 @@ import static org.briarproject.bramble.util.LogUtils.logException;
 @ThreadSafe
 @NotNullByDefault
 class AutoDeleteManagerImpl
-		implements AutoDeleteManager, OpenDatabaseHook, EventListener {
+		implements AutoDeleteManager, Service, EventListener {
 
 	/**
 	 * The minimum interval between deletion tasks in milliseconds.
 	 */
-	private static final long MIN_TASK_INTERVAL_MS = SECONDS.toMillis(10);
+	private static final long MIN_TASK_INTERVAL_MS = SECONDS.toMillis(5);
 
 	private static final Logger LOG =
 			getLogger(AutoDeleteManagerImpl.class.getName());
@@ -90,8 +91,16 @@ class AutoDeleteManagerImpl
 	}
 
 	@Override
-	public void onDatabaseOpened(Transaction txn) throws DbException {
-		deleteMessages(txn);
+	public void startService() throws ServiceException {
+		try {
+			db.transaction(false, this::deleteMessages);
+		} catch (DbException e) {
+			throw new ServiceException(e);
+		}
+	}
+
+	@Override
+	public void stopService() {
 	}
 
 	@Override
