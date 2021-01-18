@@ -18,7 +18,7 @@ import org.briarproject.briar.api.blog.BlogFactory;
 import org.briarproject.briar.api.blog.BlogManager;
 import org.briarproject.briar.api.blog.BlogSharingManager;
 import org.briarproject.briar.api.client.MessageTracker;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.forum.ForumManager;
 import org.briarproject.briar.api.forum.ForumSharingManager;
@@ -118,7 +118,7 @@ public interface BriarIntegrationTestComponent
 
 	ConnectionManager getConnectionManager();
 
-	AutoDeleteManager getAutoDeleteManager();
+	ConversationAutoDeleteManager getConversationAutoDeleteManager();
 
 	Clock getClock();
 

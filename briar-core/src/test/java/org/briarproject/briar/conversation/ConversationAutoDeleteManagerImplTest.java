@@ -23,18 +23,18 @@ import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AU
 import static org.briarproject.bramble.api.client.ContactGroupConstants.GROUP_KEY_CONTACT_ID;
 import static org.briarproject.bramble.test.TestUtils.getContact;
 import static org.briarproject.bramble.test.TestUtils.getGroup;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.CLIENT_ID;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.MAJOR_VERSION;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMER;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.NO_PREVIOUS_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.CLIENT_ID;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.MAJOR_VERSION;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_TIMESTAMP;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.NO_PREVIOUS_TIMER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("UnnecessaryLocalVariable") // Using them for readability
-public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
+public class ConversationAutoDeleteManagerImplTest extends BrambleMockTestCase {
 
 	private final DatabaseComponent db = context.mock(DatabaseComponent.class);
 	private final ClientHelper clientHelper = context.mock(ClientHelper.class);
@@ -47,16 +47,18 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 	private final Contact contact = getContact();
 	private final long now = System.currentTimeMillis();
 
-	private final AutoDeleteManagerImpl autoDeleteManager;
+	private final ConversationAutoDeleteManagerImpl
+			conversationAutoDeleteManager;
 
-	public AutoDeleteManagerImplTest() {
+	public ConversationAutoDeleteManagerImplTest() {
 		context.checking(new Expectations() {{
 			oneOf(contactGroupFactory)
 					.createLocalGroup(CLIENT_ID, MAJOR_VERSION);
 			will(returnValue(localGroup));
 		}});
-		autoDeleteManager = new AutoDeleteManagerImpl(db, clientHelper,
-				groupFactory, contactGroupFactory);
+		conversationAutoDeleteManager =
+				new ConversationAutoDeleteManagerImpl(db, clientHelper,
+						groupFactory, contactGroupFactory);
 		context.assertIsSatisfied();
 	}
 
@@ -70,7 +72,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 			will(returnValue(true));
 		}});
 
-		autoDeleteManager.onDatabaseOpened(txn);
+		conversationAutoDeleteManager.onDatabaseOpened(txn);
 	}
 
 	@Test
@@ -92,7 +94,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contact.getId());
 		}});
 
-		autoDeleteManager.onDatabaseOpened(txn);
+		conversationAutoDeleteManager.onDatabaseOpened(txn);
 	}
 
 	@Test
@@ -106,7 +108,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contact.getId());
 		}});
 
-		autoDeleteManager.addingContact(txn, contact);
+		conversationAutoDeleteManager.addingContact(txn, contact);
 	}
 
 	@Test
@@ -118,7 +120,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 			oneOf(db).removeGroup(txn, contactGroup);
 		}});
 
-		autoDeleteManager.removingContact(txn, contact);
+		conversationAutoDeleteManager.removingContact(txn, contact);
 	}
 
 	@Test
@@ -144,7 +146,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contactGroup.getId(), newMeta);
 		}});
 
-		autoDeleteManager.setAutoDeleteTimer(txn, contact.getId(), newTimer);
+		conversationAutoDeleteManager.setAutoDeleteTimer(txn, contact.getId(),
+				newTimer);
 	}
 
 	@Test
@@ -164,7 +167,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 			will(returnValue(meta));
 		}});
 
-		autoDeleteManager.setAutoDeleteTimer(txn, contact.getId(), timer);
+		conversationAutoDeleteManager.setAutoDeleteTimer(txn, contact.getId(),
+				timer);
 	}
 
 	@Test
@@ -188,7 +192,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					newMeta);
 		}});
 
-		assertEquals(timer, autoDeleteManager
+		assertEquals(timer, conversationAutoDeleteManager
 				.getAutoDeleteTimer(txn, contact.getId(), now));
 	}
 
@@ -211,7 +215,7 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					newMeta);
 		}});
 
-		assertEquals(NO_AUTO_DELETE_TIMER, autoDeleteManager
+		assertEquals(NO_AUTO_DELETE_TIMER, conversationAutoDeleteManager
 				.getAutoDeleteTimer(txn, contact.getId(), now));
 	}
 
@@ -244,8 +248,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 			will(returnValue(meta));
 		}});
 
-		autoDeleteManager.receiveAutoDeleteTimer(txn, contact.getId(),
-				remoteTimer, remoteTimestamp);
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn,
+				contact.getId(), remoteTimer, remoteTimestamp);
 
 		// no events broadcast
 		assertTrue(txn.getActions().isEmpty());
@@ -276,8 +280,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contactGroup.getId(), newMeta);
 		}});
 
-		autoDeleteManager.receiveAutoDeleteTimer(txn, contact.getId(),
-				remoteTimer, remoteTimestamp);
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn,
+				contact.getId(), remoteTimer, remoteTimestamp);
 
 		// assert that event is broadcast with new timer
 		assertEvent(txn, remoteTimer);
@@ -308,8 +312,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contactGroup.getId(), newMeta);
 		}});
 
-		autoDeleteManager.receiveAutoDeleteTimer(txn, contact.getId(),
-				remoteTimer, remoteTimestamp);
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn,
+				contact.getId(), remoteTimer, remoteTimestamp);
 
 		// no events broadcast
 		assertTrue(txn.getActions().isEmpty());
@@ -344,8 +348,8 @@ public class AutoDeleteManagerImplTest extends BrambleMockTestCase {
 					contactGroup.getId(), newMeta);
 		}});
 
-		autoDeleteManager.receiveAutoDeleteTimer(txn, contact.getId(),
-				newRemoteTimer, remoteTimestamp);
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn,
+				contact.getId(), newRemoteTimer, remoteTimestamp);
 
 		// assert that event is broadcast with new timer
 		assertEvent(txn, newRemoteTimer);

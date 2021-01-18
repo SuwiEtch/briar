@@ -58,7 +58,7 @@ import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AU
 import static org.briarproject.bramble.api.plugin.BluetoothConstants.UUID_BYTES;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.test.TestData.AUTHOR_NAMES;
 import static org.briarproject.briar.test.TestData.GROUP_NAMES;
 

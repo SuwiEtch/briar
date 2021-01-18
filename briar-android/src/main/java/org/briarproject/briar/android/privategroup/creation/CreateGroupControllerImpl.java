@@ -17,7 +17,7 @@ import org.briarproject.bramble.api.sync.GroupId;
 import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.briar.android.contactselection.ContactSelectorControllerImpl;
 import org.briarproject.briar.android.controller.handler.ResultExceptionHandler;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.privategroup.GroupMessage;
 import org.briarproject.briar.api.privategroup.GroupMessageFactory;
@@ -53,7 +53,7 @@ class CreateGroupControllerImpl extends ContactSelectorControllerImpl
 
 	private final Executor cryptoExecutor;
 	private final TransactionManager db;
-	private final AutoDeleteManager autoDeleteManager;
+	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
 	private final ConversationManager conversationManager;
 	private final ContactManager contactManager;
 	private final IdentityManager identityManager;
@@ -69,7 +69,7 @@ class CreateGroupControllerImpl extends ContactSelectorControllerImpl
 			@DatabaseExecutor Executor dbExecutor,
 			@CryptoExecutor Executor cryptoExecutor,
 			TransactionManager db,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			LifecycleManager lifecycleManager,
 			ContactManager contactManager,
@@ -83,7 +83,7 @@ class CreateGroupControllerImpl extends ContactSelectorControllerImpl
 		super(dbExecutor, lifecycleManager, contactManager);
 		this.cryptoExecutor = cryptoExecutor;
 		this.db = db;
-		this.autoDeleteManager = autoDeleteManager;
+		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
 		this.conversationManager = conversationManager;
 		this.contactManager = contactManager;
 		this.identityManager = identityManager;
@@ -171,8 +171,9 @@ class CreateGroupControllerImpl extends ContactSelectorControllerImpl
 				Contact contact = contactManager.getContact(txn, c);
 				long timestamp = conversationManager
 						.getTimestampForOutgoingMessage(txn, c);
-				long timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
-						timestamp);
+				long timer = conversationAutoDeleteManager
+						.getAutoDeleteTimer(txn, c,
+								timestamp);
 				contexts.add(new InvitationContext(contact, timestamp, timer));
 			} catch (NoSuchContactException e) {
 				// Continue

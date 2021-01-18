@@ -21,7 +21,7 @@ import static org.briarproject.bramble.test.TestUtils.getContact;
 import static org.briarproject.bramble.test.TestUtils.getLocalAuthor;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.MAX_GROUP_INVITATION_TEXT_LENGTH;
 import static org.briarproject.briar.privategroup.invitation.InviteeState.ACCEPTED;
 import static org.briarproject.briar.privategroup.invitation.InviteeState.DISSOLVED;
@@ -43,8 +43,8 @@ public class InviteeProtocolEngineTest extends AbstractProtocolEngineTest {
 			new InviteeProtocolEngine(db, clientHelper, clientVersioningManager,
 					privateGroupManager, privateGroupFactory,
 					groupMessageFactory, identityManager, messageParser,
-					messageEncoder, messageTracker, autoDeleteManager,
-					conversationManager, clock);
+					messageEncoder, messageTracker,
+					conversationAutoDeleteManager, conversationManager, clock);
 	private final LocalAuthor localAuthor = getLocalAuthor();
 
 	private InviteeSession getDefaultSession(InviteeState state) {

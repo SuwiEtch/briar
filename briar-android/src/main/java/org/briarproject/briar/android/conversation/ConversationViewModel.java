@@ -32,7 +32,7 @@ import org.briarproject.briar.android.util.UiUtils;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
 import org.briarproject.briar.android.viewmodel.LiveEvent;
 import org.briarproject.briar.android.viewmodel.MutableLiveEvent;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.event.AutoDeleteTimerMirroredEvent;
 import org.briarproject.briar.api.messaging.AttachmentHeader;
@@ -65,7 +65,7 @@ import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.bramble.util.LogUtils.now;
 import static org.briarproject.briar.android.settings.SettingsFragment.SETTINGS_NAMESPACE;
 import static org.briarproject.briar.android.util.UiUtils.observeForeverOnce;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_ONLY;
 
@@ -89,7 +89,7 @@ public class ConversationViewModel extends DbViewModel
 	private final PrivateMessageFactory privateMessageFactory;
 	private final AttachmentRetriever attachmentRetriever;
 	private final AttachmentCreator attachmentCreator;
-	private final AutoDeleteManager autoDeleteManager;
+	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
 	private final ConversationManager conversationManager;
 
 	@Nullable
@@ -128,7 +128,7 @@ public class ConversationViewModel extends DbViewModel
 			PrivateMessageFactory privateMessageFactory,
 			AttachmentRetriever attachmentRetriever,
 			AttachmentCreator attachmentCreator,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager) {
 		super(application, dbExecutor, lifecycleManager, db, androidExecutor);
 		this.db = db;
@@ -139,7 +139,7 @@ public class ConversationViewModel extends DbViewModel
 		this.privateMessageFactory = privateMessageFactory;
 		this.attachmentRetriever = attachmentRetriever;
 		this.attachmentCreator = attachmentCreator;
-		this.autoDeleteManager = autoDeleteManager;
+		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
 		this.conversationManager = conversationManager;
 		messagingGroupId = Transformations
 				.map(contact, c -> messagingManager.getContactGroup(c).getId());
@@ -192,7 +192,8 @@ public class ConversationViewModel extends DbViewModel
 				logDuration(LOG, "Loading contact", start);
 				start = now();
 				long timer = db.transactionWithResult(true, txn ->
-						autoDeleteManager.getAutoDeleteTimer(txn, contactId));
+						conversationAutoDeleteManager
+								.getAutoDeleteTimer(txn, contactId));
 				autoDeleteTimer.postValue(timer);
 				logDuration(LOG, "Getting auto-delete timer", start);
 				start = now();
@@ -311,8 +312,9 @@ public class ConversationViewModel extends DbViewModel
 				return privateMessageFactory.createPrivateMessage(groupId,
 						timestamp, text, headers);
 			} else {
-				long timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
-						timestamp);
+				long timer = conversationAutoDeleteManager
+						.getAutoDeleteTimer(txn, c,
+								timestamp);
 				return privateMessageFactory.createPrivateMessage(groupId,
 						timestamp, text, headers, timer);
 			}
@@ -357,7 +359,8 @@ public class ConversationViewModel extends DbViewModel
 		runOnDbThread(() -> {
 			try {
 				db.transaction(false, txn ->
-						autoDeleteManager.setAutoDeleteTimer(txn, c, timer));
+						conversationAutoDeleteManager
+								.setAutoDeleteTimer(txn, c, timer));
 				autoDeleteTimer.postValue(timer);
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);

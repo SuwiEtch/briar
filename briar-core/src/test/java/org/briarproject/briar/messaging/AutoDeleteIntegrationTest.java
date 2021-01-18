@@ -6,7 +6,7 @@ import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.sync.GroupId;
 import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.bramble.test.TestDatabaseConfigModule;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 import org.briarproject.briar.api.messaging.MessagingManager;
@@ -24,7 +24,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.junit.Assert.assertEquals;
 
 public class AutoDeleteIntegrationTest
@@ -194,7 +194,8 @@ public class AutoDeleteIntegrationTest
 		DatabaseComponent db = component.getDatabaseComponent();
 		ConversationManager conversationManager =
 				component.getConversationManager();
-		AutoDeleteManager autoDeleteManager = component.getAutoDeleteManager();
+		ConversationAutoDeleteManager conversationAutoDeleteManager =
+				component.getConversationAutoDeleteManager();
 		MessagingManager messagingManager = component.getMessagingManager();
 		PrivateMessageFactory factory = component.getPrivateMessageFactory();
 
@@ -202,7 +203,7 @@ public class AutoDeleteIntegrationTest
 		return db.transactionWithResult(false, txn -> {
 			long timestamp = conversationManager
 					.getTimestampForOutgoingMessage(txn, contactId);
-			long timer = autoDeleteManager
+			long timer = conversationAutoDeleteManager
 					.getAutoDeleteTimer(txn, contactId, timestamp);
 			PrivateMessage m = factory.createPrivateMessage(groupId, timestamp,
 					"Hi!", emptyList(), timer);
@@ -224,10 +225,12 @@ public class AutoDeleteIntegrationTest
 	private long getAutoDeleteTimer(BriarIntegrationTestComponent component,
 			ContactId contactId) throws DbException {
 		DatabaseComponent db = component.getDatabaseComponent();
-		AutoDeleteManager autoDeleteManager = component.getAutoDeleteManager();
+		ConversationAutoDeleteManager conversationAutoDeleteManager =
+				component.getConversationAutoDeleteManager();
 
-		return db.transactionWithResult(false,
-				txn -> autoDeleteManager.getAutoDeleteTimer(txn, contactId));
+		return db.transactionWithResult(false, txn ->
+				conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+						contactId));
 	}
 
 	@SuppressWarnings({"UseCompareMethod", "Java8ListSort"}) // Animal Sniffer

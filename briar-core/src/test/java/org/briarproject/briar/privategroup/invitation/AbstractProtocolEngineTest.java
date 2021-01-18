@@ -18,7 +18,7 @@ import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.bramble.test.BrambleMockTestCase;
 import org.briarproject.briar.api.client.MessageTracker;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.privategroup.GroupMessageFactory;
 import org.briarproject.briar.api.privategroup.PrivateGroup;
@@ -35,7 +35,7 @@ import static org.briarproject.bramble.test.TestUtils.getMessage;
 import static org.briarproject.bramble.test.TestUtils.getRandomBytes;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
 import static org.briarproject.bramble.util.StringUtils.getRandomString;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.GROUP_SALT_LENGTH;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.MAX_GROUP_INVITATION_TEXT_LENGTH;
 import static org.briarproject.briar.api.privategroup.PrivateGroupConstants.MAX_GROUP_NAME_LENGTH;
@@ -61,8 +61,8 @@ abstract class AbstractProtocolEngineTest extends BrambleMockTestCase {
 	final IdentityManager identityManager = context.mock(IdentityManager.class);
 	final MessageEncoder messageEncoder = context.mock(MessageEncoder.class);
 	final MessageTracker messageTracker = context.mock(MessageTracker.class);
-	final AutoDeleteManager autoDeleteManager =
-			context.mock(AutoDeleteManager.class);
+	final ConversationAutoDeleteManager conversationAutoDeleteManager =
+			context.mock(ConversationAutoDeleteManager.class);
 	final ConversationManager conversationManager =
 			context.mock(ConversationManager.class);
 	final Clock clock = context.mock(Clock.class);
@@ -256,8 +256,8 @@ abstract class AbstractProtocolEngineTest extends BrambleMockTestCase {
 
 	void expectGetAutoDeleteTimer(long timestamp) throws Exception {
 		context.checking(new Expectations() {{
-			oneOf(autoDeleteManager).getAutoDeleteTimer(txn, contactId,
-					timestamp);
+			oneOf(conversationAutoDeleteManager).getAutoDeleteTimer(txn,
+					contactId, timestamp);
 			will(returnValue(NO_AUTO_DELETE_TIMER));
 		}});
 	}
@@ -274,8 +274,8 @@ abstract class AbstractProtocolEngineTest extends BrambleMockTestCase {
 		context.checking(new Expectations() {{
 			oneOf(clientHelper).getContactId(txn, contactGroupId);
 			will(returnValue(contactId));
-			oneOf(autoDeleteManager).receiveAutoDeleteTimer(txn, contactId,
-					m.getAutoDeleteTimer(), m.getTimestamp());
+			oneOf(conversationAutoDeleteManager).receiveAutoDeleteTimer(txn,
+					contactId, m.getAutoDeleteTimer(), m.getTimestamp());
 		}});
 	}
 }

@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.privategroup.invitation.CreatorState.DISSOLVED;
 import static org.briarproject.briar.privategroup.invitation.CreatorState.ERROR;
 import static org.briarproject.briar.privategroup.invitation.CreatorState.INVITED;
@@ -24,8 +24,8 @@ public class CreatorProtocolEngineTest extends AbstractProtocolEngineTest {
 			new CreatorProtocolEngine(db, clientHelper, clientVersioningManager,
 					privateGroupManager, privateGroupFactory,
 					groupMessageFactory, identityManager, messageParser,
-					messageEncoder, messageTracker, autoDeleteManager,
-					conversationManager, clock);
+					messageEncoder, messageTracker,
+					conversationAutoDeleteManager, conversationManager, clock);
 
 	private CreatorSession getDefaultSession(CreatorState state) {
 		return new CreatorSession(contactGroupId, privateGroupId,

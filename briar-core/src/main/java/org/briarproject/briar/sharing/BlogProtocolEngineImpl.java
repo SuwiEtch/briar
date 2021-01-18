@@ -18,7 +18,7 @@ import org.briarproject.briar.api.blog.BlogSharingManager;
 import org.briarproject.briar.api.blog.event.BlogInvitationRequestReceivedEvent;
 import org.briarproject.briar.api.blog.event.BlogInvitationResponseReceivedEvent;
 import org.briarproject.briar.api.client.MessageTracker;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationRequest;
 
@@ -41,13 +41,13 @@ class BlogProtocolEngineImpl extends ProtocolEngineImpl<Blog> {
 			MessageEncoder messageEncoder,
 			MessageParser<Blog> messageParser,
 			MessageTracker messageTracker,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			Clock clock,
 			BlogManager blogManager,
 			InvitationFactory<Blog, BlogInvitationResponse> invitationFactory) {
 		super(db, clientHelper, clientVersioningManager, messageEncoder,
-				messageParser, messageTracker, autoDeleteManager,
+				messageParser, messageTracker, conversationAutoDeleteManager,
 				conversationManager, clock, BlogSharingManager.CLIENT_ID,
 				BlogSharingManager.MAJOR_VERSION, BlogManager.CLIENT_ID,
 				BlogManager.MAJOR_VERSION);

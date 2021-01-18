@@ -7,7 +7,7 @@ import org.briarproject.briar.api.client.SessionId;
 
 import javax.annotation.concurrent.Immutable;
 
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 
 @Immutable
 @NotNullByDefault

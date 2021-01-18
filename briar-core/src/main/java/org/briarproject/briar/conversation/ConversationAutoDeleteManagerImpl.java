@@ -15,7 +15,7 @@ import org.briarproject.bramble.api.lifecycle.LifecycleManager.OpenDatabaseHook;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.sync.Group;
 import org.briarproject.bramble.api.sync.GroupFactory;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.event.AutoDeleteTimerMirroredEvent;
 
 import java.util.logging.Logger;
@@ -27,18 +27,19 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MAX_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMER;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.GROUP_KEY_TIMESTAMP;
-import static org.briarproject.briar.conversation.AutoDeleteConstants.NO_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_PREVIOUS_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_TIMER;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.GROUP_KEY_TIMESTAMP;
+import static org.briarproject.briar.conversation.ConversationAutoDeleteConstants.NO_PREVIOUS_TIMER;
 
 @Immutable
 @NotNullByDefault
-class AutoDeleteManagerImpl
-		implements AutoDeleteManager, OpenDatabaseHook, ContactHook {
+class ConversationAutoDeleteManagerImpl
+		implements ConversationAutoDeleteManager, OpenDatabaseHook,
+		ContactHook {
 
 	private static final Logger LOG =
-			getLogger(AutoDeleteManagerImpl.class.getName());
+			getLogger(ConversationAutoDeleteManagerImpl.class.getName());
 
 	private final DatabaseComponent db;
 	private final ClientHelper clientHelper;
@@ -46,7 +47,7 @@ class AutoDeleteManagerImpl
 	private final Group localGroup;
 
 	@Inject
-	AutoDeleteManagerImpl(
+	ConversationAutoDeleteManagerImpl(
 			DatabaseComponent db,
 			ClientHelper clientHelper,
 			GroupFactory groupFactory,

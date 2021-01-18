@@ -1,6 +1,6 @@
 package org.briarproject.briar.conversation;
 
-interface AutoDeleteConstants {
+interface ConversationAutoDeleteConstants {
 
 	/**
 	 * Group metadata key for storing the auto-delete timer duration.

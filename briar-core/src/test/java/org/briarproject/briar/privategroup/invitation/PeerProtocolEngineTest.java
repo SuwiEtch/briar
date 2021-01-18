@@ -9,7 +9,7 @@ import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.VISIBLE;
 import static org.briarproject.bramble.test.TestUtils.getRandomId;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.privategroup.invitation.PeerState.AWAIT_MEMBER;
 import static org.briarproject.briar.privategroup.invitation.PeerState.BOTH_JOINED;
 import static org.briarproject.briar.privategroup.invitation.PeerState.ERROR;
@@ -27,8 +27,8 @@ public class PeerProtocolEngineTest extends AbstractProtocolEngineTest {
 			new PeerProtocolEngine(db, clientHelper, clientVersioningManager,
 					privateGroupManager, privateGroupFactory,
 					groupMessageFactory, identityManager, messageParser,
-					messageEncoder, messageTracker, autoDeleteManager,
-					conversationManager, clock);
+					messageEncoder, messageTracker,
+					conversationAutoDeleteManager, conversationManager, clock);
 
 	private PeerSession getDefaultSession(PeerState state) {
 		return new PeerSession(contactGroupId, privateGroupId,

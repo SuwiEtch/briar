@@ -16,7 +16,7 @@ import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.client.ProtocolStateException;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.introduction.event.IntroductionAbortedEvent;
 import org.briarproject.briar.introduction.IntroducerSession.Introducee;
@@ -55,12 +55,12 @@ class IntroducerProtocolEngine
 			MessageParser messageParser,
 			MessageEncoder messageEncoder,
 			ClientVersioningManager clientVersioningManager,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			Clock clock) {
 		super(db, clientHelper, contactManager, contactGroupFactory,
 				messageTracker, identityManager, messageParser, messageEncoder,
-				clientVersioningManager, autoDeleteManager,
+				clientVersioningManager, conversationAutoDeleteManager,
 				conversationManager, clock);
 	}
 

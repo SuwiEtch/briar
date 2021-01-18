@@ -32,7 +32,7 @@ import org.briarproject.bramble.test.TestUtils;
 import org.briarproject.briar.api.blog.BlogFactory;
 import org.briarproject.briar.api.blog.BlogPostFactory;
 import org.briarproject.briar.api.client.MessageTracker;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 import org.briarproject.briar.api.forum.ForumPostFactory;
 import org.briarproject.briar.api.privategroup.GroupMessageFactory;
@@ -491,19 +491,22 @@ public abstract class BriarIntegrationTest<C extends BriarIntegrationTestCompone
 	protected void setAutoDeleteTimer(BriarIntegrationTestComponent component,
 			ContactId contactId, long timer) throws DbException {
 		DatabaseComponent db = component.getDatabaseComponent();
-		AutoDeleteManager autoDeleteManager = component.getAutoDeleteManager();
+		ConversationAutoDeleteManager conversationAutoDeleteManager =
+				component.getConversationAutoDeleteManager();
 
 		db.transaction(false, txn ->
-				autoDeleteManager.setAutoDeleteTimer(txn, contactId, timer));
+				conversationAutoDeleteManager.setAutoDeleteTimer(txn,
+						contactId, timer));
 	}
 
 	protected long getAutoDeleteTimer(BriarIntegrationTestComponent component,
 			ContactId contactId, long timestamp) throws DbException {
 		DatabaseComponent db = component.getDatabaseComponent();
-		AutoDeleteManager autoDeleteManager = component.getAutoDeleteManager();
+		ConversationAutoDeleteManager conversationAutoDeleteManager =
+				component.getConversationAutoDeleteManager();
 
 		return db.transactionWithResult(false,
-				txn -> autoDeleteManager.getAutoDeleteTimer(txn, contactId,
-						timestamp));
+				txn -> conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+						contactId, timestamp));
 	}
 }

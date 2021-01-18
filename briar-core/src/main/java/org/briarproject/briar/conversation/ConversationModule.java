@@ -2,7 +2,7 @@ package org.briarproject.briar.conversation;
 
 import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 
 import javax.inject.Inject;
@@ -18,7 +18,7 @@ public class ConversationModule {
 		@Inject
 		ConversationManager conversationManager;
 		@Inject
-		AutoDeleteManager autoDeleteManager;
+		ConversationAutoDeleteManager conversationAutoDeleteManager;
 	}
 
 	@Provides
@@ -30,13 +30,14 @@ public class ConversationModule {
 
 	@Provides
 	@Singleton
-	AutoDeleteManager provideAutoDeleteManager(
+	ConversationAutoDeleteManager provideConversationAutoDeleteManager(
 			LifecycleManager lifecycleManager, ContactManager contactManager,
-			AutoDeleteManagerImpl autoDeleteManager) {
-		lifecycleManager.registerOpenDatabaseHook(autoDeleteManager);
-		contactManager.registerContactHook(autoDeleteManager);
+			ConversationAutoDeleteManagerImpl conversationAutoDeleteManager) {
+		lifecycleManager
+				.registerOpenDatabaseHook(conversationAutoDeleteManager);
+		contactManager.registerContactHook(conversationAutoDeleteManager);
 		// Don't need to register with the client versioning manager as this
 		// client's groups aren't shared with contacts
-		return autoDeleteManager;
+		return conversationAutoDeleteManager;
 	}
 }

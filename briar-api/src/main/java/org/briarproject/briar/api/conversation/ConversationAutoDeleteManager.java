@@ -7,7 +7,7 @@ import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.sync.ClientId;
 
 @NotNullByDefault
-public interface AutoDeleteManager {
+public interface ConversationAutoDeleteManager {
 
 	/**
 	 * The unique ID of the auto-delete client.

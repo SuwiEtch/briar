@@ -18,7 +18,7 @@ import org.briarproject.bramble.api.sync.MessageId;
 import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.briar.api.client.MessageTracker;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.privategroup.GroupMessage;
 import org.briarproject.briar.api.privategroup.GroupMessageFactory;
@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import static java.lang.Math.max;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.privategroup.invitation.MessageType.ABORT;
 import static org.briarproject.briar.privategroup.invitation.MessageType.INVITE;
 import static org.briarproject.briar.privategroup.invitation.MessageType.JOIN;
@@ -55,7 +55,7 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 	private final IdentityManager identityManager;
 	private final MessageParser messageParser;
 	private final MessageEncoder messageEncoder;
-	private final AutoDeleteManager autoDeleteManager;
+	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
 	private final ConversationManager conversationManager;
 	private final Clock clock;
 
@@ -70,7 +70,7 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 			MessageParser messageParser,
 			MessageEncoder messageEncoder,
 			MessageTracker messageTracker,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			Clock clock) {
 		this.db = db;
@@ -83,7 +83,7 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 		this.messageParser = messageParser;
 		this.messageEncoder = messageEncoder;
 		this.messageTracker = messageTracker;
-		this.autoDeleteManager = autoDeleteManager;
+		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
 		this.conversationManager = conversationManager;
 		this.clock = clock;
 	}
@@ -154,7 +154,7 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 			// Set auto-delete timer if manually accepting an invitation
 			long timer = NO_AUTO_DELETE_TIMER;
 			if (visibleInUi) {
-				timer = autoDeleteManager
+				timer = conversationAutoDeleteManager
 						.getAutoDeleteTimer(txn, c, localTimestamp);
 			}
 			m = messageEncoder.encodeJoinMessage(s.getContactGroupId(),
@@ -183,7 +183,7 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 			// Set auto-delete timer if manually accepting an invitation
 			long timer = NO_AUTO_DELETE_TIMER;
 			if (visibleInUi) {
-				timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
+				timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn, c,
 						localTimestamp);
 			}
 			m = messageEncoder.encodeLeaveMessage(s.getContactGroupId(),
@@ -303,8 +303,8 @@ abstract class AbstractProtocolEngine<S extends Session<?>>
 	void receiveAutoDeleteTimer(Transaction txn,
 			DeletableGroupInvitationMessage m) throws DbException {
 		ContactId c = getContactId(txn, m.getContactGroupId());
-		autoDeleteManager.receiveAutoDeleteTimer(txn, c, m.getAutoDeleteTimer(),
-				m.getTimestamp());
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn, c,
+				m.getAutoDeleteTimer(), m.getTimestamp());
 	}
 
 	private void sendMessage(Transaction txn, Message m, MessageType type,

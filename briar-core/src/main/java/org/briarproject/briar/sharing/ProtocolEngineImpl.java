@@ -20,7 +20,7 @@ import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.client.ProtocolStateException;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.sharing.Shareable;
 import org.briarproject.briar.api.sharing.event.ContactLeftShareableEvent;
@@ -34,7 +34,7 @@ import static java.lang.Math.max;
 import static org.briarproject.bramble.api.sync.Group.Visibility.INVISIBLE;
 import static org.briarproject.bramble.api.sync.Group.Visibility.SHARED;
 import static org.briarproject.bramble.api.sync.Group.Visibility.VISIBLE;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.sharing.MessageType.ABORT;
 import static org.briarproject.briar.sharing.MessageType.ACCEPT;
 import static org.briarproject.briar.sharing.MessageType.DECLINE;
@@ -59,7 +59,7 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 	private final ClientVersioningManager clientVersioningManager;
 	private final MessageEncoder messageEncoder;
 	private final MessageTracker messageTracker;
-	private final AutoDeleteManager autoDeleteManager;
+	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
 	private final ConversationManager conversationManager;
 	private final Clock clock;
 	private final ClientId sharingClientId, shareableClientId;
@@ -72,7 +72,7 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 			MessageEncoder messageEncoder,
 			MessageParser<S> messageParser,
 			MessageTracker messageTracker,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			Clock clock,
 			ClientId sharingClientId,
@@ -85,7 +85,7 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 		this.messageEncoder = messageEncoder;
 		this.messageParser = messageParser;
 		this.messageTracker = messageTracker;
-		this.autoDeleteManager = autoDeleteManager;
+		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
 		this.conversationManager = conversationManager;
 		this.clock = clock;
 		this.sharingClientId = sharingClientId;
@@ -142,8 +142,8 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 		long localTimestamp = getTimestampForVisibleMessage(txn, s);
 		ContactId c = getContactId(txn, s.getContactGroupId());
 		if (contactSupportsAutoDeletion(txn, c)) {
-			long timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
-					localTimestamp);
+			long timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+					c, localTimestamp);
 			m = messageEncoder.encodeInviteMessage(s.getContactGroupId(),
 					localTimestamp, s.getLastLocalMessageId(), descriptor,
 					text, timer);
@@ -210,8 +210,8 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 		long localTimestamp = getTimestampForVisibleMessage(txn, s);
 		ContactId c = getContactId(txn, s.getContactGroupId());
 		if (contactSupportsAutoDeletion(txn, c)) {
-			long timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
-					localTimestamp);
+			long timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+					c, localTimestamp);
 			m = messageEncoder.encodeAcceptMessage(s.getContactGroupId(),
 					s.getShareableId(), localTimestamp,
 					s.getLastLocalMessageId(), timer);
@@ -265,8 +265,8 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 		long localTimestamp = getTimestampForVisibleMessage(txn, s);
 		ContactId c = getContactId(txn, s.getContactGroupId());
 		if (contactSupportsAutoDeletion(txn, c)) {
-			long timer = autoDeleteManager.getAutoDeleteTimer(txn, c,
-					localTimestamp);
+			long timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn,
+					c, localTimestamp);
 			m = messageEncoder.encodeDeclineMessage(s.getContactGroupId(),
 					s.getShareableId(), localTimestamp,
 					s.getLastLocalMessageId(), timer);
@@ -730,8 +730,8 @@ abstract class ProtocolEngineImpl<S extends Shareable>
 	private void receiveAutoDeleteTimer(Transaction txn,
 			DeletableSharingMessage m) throws DbException {
 		ContactId c = getContactId(txn, m.getContactGroupId());
-		autoDeleteManager.receiveAutoDeleteTimer(txn, c, m.getAutoDeleteTimer(),
-				m.getTimestamp());
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn, c,
+				m.getAutoDeleteTimer(), m.getTimestamp());
 	}
 
 	private ContactId getContactId(Transaction txn, GroupId contactGroupId)

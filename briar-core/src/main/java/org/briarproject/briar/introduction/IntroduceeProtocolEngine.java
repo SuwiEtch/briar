@@ -30,7 +30,7 @@ import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.client.ProtocolStateException;
 import org.briarproject.briar.api.client.SessionId;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.introduction.IntroductionRequest;
 import org.briarproject.briar.api.introduction.event.IntroductionAbortedEvent;
@@ -81,12 +81,12 @@ class IntroduceeProtocolEngine
 			KeyManager keyManager,
 			TransportPropertyManager transportPropertyManager,
 			ClientVersioningManager clientVersioningManager,
-			AutoDeleteManager autoDeleteManager,
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
 			ConversationManager conversationManager,
 			Clock clock) {
 		super(db, clientHelper, contactManager, contactGroupFactory,
 				messageTracker, identityManager, messageParser, messageEncoder,
-				clientVersioningManager, autoDeleteManager,
+				clientVersioningManager, conversationAutoDeleteManager,
 				conversationManager, clock);
 		this.crypto = crypto;
 		this.keyManager = keyManager;

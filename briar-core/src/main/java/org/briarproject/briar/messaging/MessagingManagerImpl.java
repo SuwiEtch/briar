@@ -29,7 +29,7 @@ import org.briarproject.bramble.api.versioning.ClientVersioningManager;
 import org.briarproject.bramble.api.versioning.ClientVersioningManager.ClientVersioningHook;
 import org.briarproject.briar.api.client.MessageTracker;
 import org.briarproject.briar.api.client.MessageTracker.GroupCount;
-import org.briarproject.briar.api.conversation.AutoDeleteManager;
+import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager.ConversationClient;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
 import org.briarproject.briar.api.conversation.DeletionResult;
@@ -62,7 +62,7 @@ import static java.util.Collections.emptyList;
 import static org.briarproject.bramble.api.sync.SyncConstants.MAX_MESSAGE_BODY_LENGTH;
 import static org.briarproject.bramble.api.sync.validation.MessageState.DELIVERED;
 import static org.briarproject.bramble.util.IoUtils.copyAndClose;
-import static org.briarproject.briar.api.conversation.AutoDeleteManager.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.briar.api.conversation.ConversationAutoDeleteManager.NO_AUTO_DELETE_TIMER;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_IMAGES_AUTO_DELETE;
 import static org.briarproject.briar.api.messaging.PrivateMessageFormat.TEXT_ONLY;
@@ -90,7 +90,7 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 	private final MessageTracker messageTracker;
 	private final ClientVersioningManager clientVersioningManager;
 	private final ContactGroupFactory contactGroupFactory;
-	private final AutoDeleteManager autoDeleteManager;
+	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
 
 	@Inject
 	MessagingManagerImpl(
@@ -100,14 +100,14 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 			MetadataParser metadataParser,
 			MessageTracker messageTracker,
 			ContactGroupFactory contactGroupFactory,
-			AutoDeleteManager autoDeleteManager) {
+			ConversationAutoDeleteManager conversationAutoDeleteManager) {
 		this.db = db;
 		this.clientHelper = clientHelper;
 		this.metadataParser = metadataParser;
 		this.messageTracker = messageTracker;
 		this.clientVersioningManager = clientVersioningManager;
 		this.contactGroupFactory = contactGroupFactory;
-		this.autoDeleteManager = autoDeleteManager;
+		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
 	}
 
 	@Override
@@ -212,8 +212,8 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 				new PrivateMessageReceivedEvent(header, contactId);
 		txn.attach(event);
 		messageTracker.trackIncomingMessage(txn, m);
-		autoDeleteManager.receiveAutoDeleteTimer(txn, contactId, timer,
-				timestamp);
+		conversationAutoDeleteManager.receiveAutoDeleteTimer(txn, contactId,
+				timer, timestamp);
 	}
 
 	private List<AttachmentHeader> parseAttachmentHeaders(BdfDictionary meta)
