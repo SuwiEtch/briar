@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.briarproject.bramble.api.autodelete.event.MessagesAutoDeletedEvent;
 import org.briarproject.bramble.api.connection.ConnectionRegistry;
 import org.briarproject.bramble.api.contact.Contact;
 import org.briarproject.bramble.api.contact.ContactId;
@@ -280,6 +281,10 @@ public class ContactListFragment extends BaseFragment implements EventListener,
 		} else if (e instanceof PendingContactAddedEvent ||
 				e instanceof PendingContactRemovedEvent) {
 			checkForPendingContacts();
+		} else if (e instanceof MessagesAutoDeletedEvent) {
+			// TODO: Handle this better
+			LOG.info("Messages auto-deleted, reloading");
+			loadContacts();
 		}
 	}
 
