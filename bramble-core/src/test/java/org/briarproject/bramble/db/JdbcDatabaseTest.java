@@ -352,7 +352,7 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		assertTrue(ids.isEmpty());
 
 		// Sharing the message should make it sendable
-		db.setMessageShared(txn, messageId);
+		db.setMessageShared(txn, messageId, true);
 		ids = db.getMessagesToSend(txn, contactId, ONE_MEGABYTE, MAX_LATENCY);
 		assertEquals(singletonList(messageId), ids);
 		ids = db.getMessagesToOffer(txn, contactId, 100, MAX_LATENCY);
@@ -2039,7 +2039,7 @@ public abstract class JdbcDatabaseTest extends BrambleTestCase {
 		assertEquals(Long.MAX_VALUE, db.getNextSendTime(txn, contactId));
 
 		// Share the message - now it should be sendable immediately
-		db.setMessageShared(txn, messageId);
+		db.setMessageShared(txn, messageId, true);
 		assertEquals(0, db.getNextSendTime(txn, contactId));
 
 		// Mark the message as requested - it should still be sendable

@@ -1054,6 +1054,16 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 	}
 
 	@Override
+	public void setMessageNotShared(Transaction transaction, MessageId m)
+			throws DbException {
+		if (transaction.isReadOnly()) throw new IllegalArgumentException();
+		T txn = unbox(transaction);
+		if (!db.containsMessage(txn, m))
+			throw new NoSuchMessageException();
+		db.setMessageShared(txn, m, false);
+	}
+
+	@Override
 	public void setMessageShared(Transaction transaction, MessageId m)
 			throws DbException {
 		if (transaction.isReadOnly()) throw new IllegalArgumentException();
@@ -1062,7 +1072,7 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 			throw new NoSuchMessageException();
 		if (db.getMessageState(txn, m) != DELIVERED)
 			throw new IllegalArgumentException("Shared undelivered message");
-		db.setMessageShared(txn, m);
+		db.setMessageShared(txn, m, true);
 		transaction.attach(new MessageSharedEvent(m));
 	}
 

@@ -3253,22 +3253,24 @@ abstract class JdbcDatabase implements Database<Connection> {
 	}
 
 	@Override
-	public void setMessageShared(Connection txn, MessageId m)
+	public void setMessageShared(Connection txn, MessageId m, boolean shared)
 			throws DbException {
 		PreparedStatement ps = null;
 		try {
-			String sql = "UPDATE messages SET shared = TRUE"
+			String sql = "UPDATE messages SET shared = ?"
 					+ " WHERE messageId = ?";
 			ps = txn.prepareStatement(sql);
-			ps.setBytes(1, m.getBytes());
+			ps.setBoolean(1, shared);
+			ps.setBytes(2, m.getBytes());
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
 			ps.close();
 			// Update denormalised column in statuses
-			sql = "UPDATE statuses SET messageShared = TRUE"
+			sql = "UPDATE statuses SET messageShared = ?"
 					+ " WHERE messageId = ?";
 			ps = txn.prepareStatement(sql);
-			ps.setBytes(1, m.getBytes());
+			ps.setBoolean(1, shared);
+			ps.setBytes(2, m.getBytes());
 			affected = ps.executeUpdate();
 			if (affected < 0) throw new DbStateException();
 			ps.close();

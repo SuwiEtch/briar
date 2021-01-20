@@ -604,6 +604,12 @@ public interface DatabaseComponent extends TransactionManager {
 	void setMessagePermanent(Transaction txn, MessageId m) throws DbException;
 
 	/**
+	 * Marks the given message as not shared. This method is only meant for
+	 * testing.
+	 */
+	void setMessageNotShared(Transaction txn, MessageId m) throws DbException;
+
+	/**
 	 * Marks the given message as shared.
 	 */
 	void setMessageShared(Transaction txn, MessageId m) throws DbException;

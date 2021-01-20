@@ -737,9 +737,10 @@ interface Database<T> {
 	void setMessagePermanent(T txn, MessageId m) throws DbException;
 
 	/**
-	 * Marks the given message as shared.
+	 * Marks the given message as shared or not.
 	 */
-	void setMessageShared(T txn, MessageId m) throws DbException;
+	void setMessageShared(T txn, MessageId m, boolean shared)
+			throws DbException;
 
 	/**
 	 * Sets the validation and delivery state of the given message.
