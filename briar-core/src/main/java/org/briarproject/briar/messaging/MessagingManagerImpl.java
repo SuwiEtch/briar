@@ -2,6 +2,7 @@ package org.briarproject.briar.messaging;
 
 import org.briarproject.bramble.api.FormatException;
 import org.briarproject.bramble.api.autodelete.AutoDeleteHook;
+import org.briarproject.bramble.api.autodelete.AutoDeleteManager;
 import org.briarproject.bramble.api.client.ClientHelper;
 import org.briarproject.bramble.api.client.ContactGroupFactory;
 import org.briarproject.bramble.api.contact.Contact;
@@ -93,6 +94,7 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 	private final ClientVersioningManager clientVersioningManager;
 	private final ContactGroupFactory contactGroupFactory;
 	private final ConversationAutoDeleteManager conversationAutoDeleteManager;
+	private final AutoDeleteManager autoDeleteManager;
 
 	@Inject
 	MessagingManagerImpl(
@@ -102,7 +104,8 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 			MetadataParser metadataParser,
 			MessageTracker messageTracker,
 			ContactGroupFactory contactGroupFactory,
-			ConversationAutoDeleteManager conversationAutoDeleteManager) {
+			ConversationAutoDeleteManager conversationAutoDeleteManager,
+			AutoDeleteManager autoDeleteManager) {
 		this.db = db;
 		this.clientHelper = clientHelper;
 		this.metadataParser = metadataParser;
@@ -110,6 +113,7 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 		this.clientVersioningManager = clientVersioningManager;
 		this.contactGroupFactory = contactGroupFactory;
 		this.conversationAutoDeleteManager = conversationAutoDeleteManager;
+		this.autoDeleteManager = autoDeleteManager;
 	}
 
 	@Override
@@ -236,6 +240,9 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 			throws DbException {
 		ContactId contactId = getContactId(txn, m.getGroupId());
 		txn.attach(new AttachmentReceivedEvent(m.getId(), contactId));
+		// If a message was waiting for this attachment before being
+		// auto-deleted, we can now delete it
+		autoDeleteManager.retryAutoDeletion(txn, m.getGroupId());
 	}
 
 	@Override
@@ -516,7 +523,6 @@ class MessagingManagerImpl implements MessagingManager, IncomingMessageHook,
 	public boolean deleteMessage(Transaction txn, GroupId g, MessageId m)
 			throws DbException {
 		ContactId c = getContactId(txn, g);
-		// TODO: Message will not be deleted if there are missing attachments
 		return deleteMessages(txn, c, singleton(m)).allDeleted();
 	}
 

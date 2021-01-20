@@ -5,10 +5,12 @@ import org.briarproject.bramble.api.db.DatabaseComponent;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.sync.GroupId;
 import org.briarproject.bramble.api.sync.MessageId;
+import org.briarproject.bramble.system.TimeTravelModule;
 import org.briarproject.bramble.test.TestDatabaseConfigModule;
 import org.briarproject.briar.api.conversation.ConversationAutoDeleteManager;
 import org.briarproject.briar.api.conversation.ConversationManager;
 import org.briarproject.briar.api.conversation.ConversationMessageHeader;
+import org.briarproject.briar.api.messaging.AttachmentHeader;
 import org.briarproject.briar.api.messaging.MessagingManager;
 import org.briarproject.briar.api.messaging.PrivateMessage;
 import org.briarproject.briar.api.messaging.PrivateMessageFactory;
@@ -17,15 +19,20 @@ import org.briarproject.briar.test.BriarIntegrationTestComponent;
 import org.briarproject.briar.test.DaggerBriarIntegrationTestComponent;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.sort;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.MIN_AUTO_DELETE_TIMER_MS;
 import static org.briarproject.bramble.api.autodelete.AutoDeleteConstants.NO_AUTO_DELETE_TIMER;
+import static org.briarproject.bramble.test.TestUtils.getRandomBytes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class AutoDeleteIntegrationTest
 		extends BriarIntegrationTest<BriarIntegrationTestComponent> {
@@ -39,18 +46,32 @@ public class AutoDeleteIntegrationTest
 
 		c0 = DaggerBriarIntegrationTestComponent.builder()
 				.testDatabaseConfigModule(new TestDatabaseConfigModule(t0Dir))
+				.timeTravelModule(new TimeTravelModule(true))
 				.build();
 		BriarIntegrationTestComponent.Helper.injectEagerSingletons(c0);
 
 		c1 = DaggerBriarIntegrationTestComponent.builder()
 				.testDatabaseConfigModule(new TestDatabaseConfigModule(t1Dir))
+				.timeTravelModule(new TimeTravelModule(true))
 				.build();
 		BriarIntegrationTestComponent.Helper.injectEagerSingletons(c1);
 
 		c2 = DaggerBriarIntegrationTestComponent.builder()
 				.testDatabaseConfigModule(new TestDatabaseConfigModule(t2Dir))
+				.timeTravelModule(new TimeTravelModule(true))
 				.build();
 		BriarIntegrationTestComponent.Helper.injectEagerSingletons(c2);
+
+		// Use different times to avoid creating identical messages that are
+		// treated as redundant copies of the same message (#1907)
+		try {
+			long now = System.currentTimeMillis();
+			c0.getTimeTravel().setCurrentTimeMillis(now);
+			c1.getTimeTravel().setCurrentTimeMillis(now + 1);
+			c2.getTimeTravel().setCurrentTimeMillis(now + 2);
+		} catch (InterruptedException e) {
+			fail();
+		}
 	}
 
 	@Test
@@ -91,6 +112,8 @@ public class AutoDeleteIntegrationTest
 		assertEquals(NO_AUTO_DELETE_TIMER, h0.getAutoDeleteTimer());
 		// Sync the message to 1
 		sync0To1(1, true);
+		// Sync the ack to 0
+		ack1To0(1);
 		// The message should have been added to 1's view of the conversation
 		List<ConversationMessageHeader> headers1 =
 				getMessageHeaders(c1, contactId0From1);
@@ -104,6 +127,60 @@ public class AutoDeleteIntegrationTest
 				getAutoDeleteTimer(c0, contactId1From0));
 		assertEquals(NO_AUTO_DELETE_TIMER,
 				getAutoDeleteTimer(c1, contactId0From1));
+	}
+
+	@Test
+	public void testNonDefaultTimer() throws Exception {
+		// Set 0's timer
+		setAutoDeleteTimer(c0, contactId1From0, MIN_AUTO_DELETE_TIMER_MS);
+		// 0 should be using the new timer
+		assertEquals(MIN_AUTO_DELETE_TIMER_MS,
+				getAutoDeleteTimer(c0, contactId1From0));
+		// 1 should still be using the default timer
+		assertEquals(NO_AUTO_DELETE_TIMER,
+				getAutoDeleteTimer(c1, contactId0From1));
+		// 0 creates a message with the new timer
+		MessageId messageId = createMessageWithTimer(c0, contactId1From0);
+		// The message should have been added to 0's view of the conversation
+		List<ConversationMessageHeader> headers0 =
+				getMessageHeaders(c0, contactId1From0);
+		assertEquals(1, headers0.size());
+		ConversationMessageHeader h0 = headers0.get(0);
+		assertEquals(messageId, h0.getId());
+		// The message should have the new timer
+		assertEquals(MIN_AUTO_DELETE_TIMER_MS, h0.getAutoDeleteTimer());
+		// Sync the message to 1
+		sync0To1(1, true);
+		// Sync the ack to 0
+		ack1To0(1);
+		// The message should have been added to 1's view of the conversation
+		List<ConversationMessageHeader> headers1 =
+				getMessageHeaders(c1, contactId0From1);
+		assertEquals(1, headers1.size());
+		ConversationMessageHeader h1 = headers1.get(0);
+		assertEquals(messageId, h1.getId());
+		// The message should have the new timer
+		assertEquals(MIN_AUTO_DELETE_TIMER_MS, h1.getAutoDeleteTimer());
+		// Both peers should be using the new timer
+		assertEquals(MIN_AUTO_DELETE_TIMER_MS,
+				getAutoDeleteTimer(c0, contactId1From0));
+		assertEquals(MIN_AUTO_DELETE_TIMER_MS,
+				getAutoDeleteTimer(c1, contactId0From1));
+		// Before the timer elapses, both peers should still see the message
+		c0.getTimeTravel().addCurrentTimeMillis(MIN_AUTO_DELETE_TIMER_MS - 1);
+		c1.getTimeTravel().addCurrentTimeMillis(MIN_AUTO_DELETE_TIMER_MS - 1);
+		headers0 = getMessageHeaders(c0, contactId1From0);
+		assertEquals(1, headers0.size());
+		headers1 = getMessageHeaders(c1, contactId0From1);
+		assertEquals(1, headers1.size());
+		// When the timer has elapsed, the message should be deleted from both
+		// peers
+		c0.getTimeTravel().addCurrentTimeMillis(1);
+		c1.getTimeTravel().addCurrentTimeMillis(1);
+		headers0 = getMessageHeaders(c0, contactId1From0);
+		assertEquals(0, headers0.size());
+		headers1 = getMessageHeaders(c1, contactId0From1);
+		assertEquals(0, headers1.size());
 	}
 
 	@Test
@@ -128,6 +205,8 @@ public class AutoDeleteIntegrationTest
 		assertEquals(MIN_AUTO_DELETE_TIMER_MS, h0.getAutoDeleteTimer());
 		// Sync the message to 1
 		sync0To1(1, true);
+		// Sync the ack to 0
+		ack1To0(1);
 		// The message should have been added to 1's view of the conversation
 		List<ConversationMessageHeader> headers1 =
 				getMessageHeaders(c1, contactId0From1);
@@ -153,6 +232,8 @@ public class AutoDeleteIntegrationTest
 				headers1.get(1).getAutoDeleteTimer());
 		// Sync the message to 0
 		sync1To0(1, true);
+		// Sync the ack to 1
+		ack0To1(1);
 		// The message should have been added to 0's view of the conversation
 		headers0 = getMessageHeaders(c0, contactId1From0);
 		assertEquals(2, headers0.size());
@@ -191,6 +272,12 @@ public class AutoDeleteIntegrationTest
 	private MessageId createMessageWithTimer(
 			BriarIntegrationTestComponent component, ContactId contactId)
 			throws Exception {
+		return createMessageWithTimer(component, contactId, emptyList());
+	}
+
+	private MessageId createMessageWithTimer(
+			BriarIntegrationTestComponent component, ContactId contactId,
+			List<AttachmentHeader> attachmentHeaders) throws Exception {
 		DatabaseComponent db = component.getDatabaseComponent();
 		ConversationManager conversationManager =
 				component.getConversationManager();
@@ -206,7 +293,7 @@ public class AutoDeleteIntegrationTest
 			long timer = conversationAutoDeleteManager.getAutoDeleteTimer(txn,
 					contactId, timestamp);
 			PrivateMessage m = factory.createPrivateMessage(groupId, timestamp,
-					"Hi!", emptyList(), timer);
+					"Hi!", attachmentHeaders, timer);
 			messagingManager.addLocalMessage(txn, m);
 			return m.getMessage().getId();
 		});
