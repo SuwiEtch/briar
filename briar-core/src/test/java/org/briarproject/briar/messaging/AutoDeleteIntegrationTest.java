@@ -249,6 +249,49 @@ public class AutoDeleteIntegrationTest
 				getAutoDeleteTimer(c1, contactId0From1));
 	}
 
+	@Test
+	public void testMessageWithAttachment() throws Exception {
+		// Set 0's timer
+		setAutoDeleteTimer(c0, contactId1From0, MIN_AUTO_DELETE_TIMER_MS);
+		// 0 creates an attachment
+		AttachmentHeader attachmentHeader =
+				createAttachment(c0, contactId1From0);
+		// 0 creates a message with the default timer and the attachment
+		MessageId messageId = createMessageWithTimer(c0, contactId1From0,
+				singletonList(attachmentHeader));
+		// The message should have been added to 0's view of the conversation
+		List<ConversationMessageHeader> headers0 =
+				getMessageHeaders(c0, contactId1From0);
+		assertEquals(1, headers0.size());
+		ConversationMessageHeader h0 = headers0.get(0);
+		assertEquals(messageId, h0.getId());
+		// Sync the message and the attachment to 1
+		sync0To1(2, true);
+		// Sync the acks to 0
+		ack1To0(2);
+		// The message should have been added to 1's view of the conversation
+		List<ConversationMessageHeader> headers1 =
+				getMessageHeaders(c1, contactId0From1);
+		assertEquals(1, headers1.size());
+		ConversationMessageHeader h1 = headers1.get(0);
+		assertEquals(messageId, h1.getId());
+		// Before the timer elapses, both peers should still see the message
+		c0.getTimeTravel().addCurrentTimeMillis(MIN_AUTO_DELETE_TIMER_MS - 1);
+		c1.getTimeTravel().addCurrentTimeMillis(MIN_AUTO_DELETE_TIMER_MS - 1);
+		headers0 = getMessageHeaders(c0, contactId1From0);
+		assertEquals(1, headers0.size());
+		headers1 = getMessageHeaders(c1, contactId0From1);
+		assertEquals(1, headers1.size());
+		// When the timer has elapsed, the message should be deleted from both
+		// peers
+		c0.getTimeTravel().addCurrentTimeMillis(1);
+		c1.getTimeTravel().addCurrentTimeMillis(1);
+		headers0 = getMessageHeaders(c0, contactId1From0);
+		assertEquals(0, headers0.size());
+		headers1 = getMessageHeaders(c1, contactId0From1);
+		assertEquals(0, headers1.size());
+	}
+
 	private MessageId createMessageWithoutTimer(
 			BriarIntegrationTestComponent component, ContactId contactId)
 			throws Exception {
@@ -297,6 +340,17 @@ public class AutoDeleteIntegrationTest
 			messagingManager.addLocalMessage(txn, m);
 			return m.getMessage().getId();
 		});
+	}
+
+	private AttachmentHeader createAttachment(
+			BriarIntegrationTestComponent component, ContactId contactId)
+			throws Exception {
+		MessagingManager messagingManager = component.getMessagingManager();
+
+		GroupId groupId = messagingManager.getConversationId(contactId);
+		InputStream in = new ByteArrayInputStream(getRandomBytes(1234));
+		return messagingManager.addLocalAttachment(groupId,
+				component.getClock().currentTimeMillis(), "image/jpeg", in);
 	}
 
 	private List<ConversationMessageHeader> getMessageHeaders(
