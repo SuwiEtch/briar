@@ -13,6 +13,7 @@ import org.briarproject.bramble.api.lifecycle.LifecycleManager;
 import org.briarproject.bramble.api.properties.TransportPropertyManager;
 import org.briarproject.bramble.api.system.Clock;
 import org.briarproject.bramble.test.BrambleCoreIntegrationTestModule;
+import org.briarproject.bramble.test.TimeTravel;
 import org.briarproject.briar.api.autodelete.AutoDeleteManager;
 import org.briarproject.briar.api.blog.BlogFactory;
 import org.briarproject.briar.api.blog.BlogManager;
@@ -120,6 +121,8 @@ public interface BriarIntegrationTestComponent
 	AutoDeleteManager getAutoDeleteManager();
 
 	Clock getClock();
+
+	TimeTravel getTimeTravel();
 
 	class Helper {
 
