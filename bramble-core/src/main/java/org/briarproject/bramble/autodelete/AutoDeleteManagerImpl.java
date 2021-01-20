@@ -91,9 +91,16 @@ class AutoDeleteManagerImpl
 	}
 
 	@Override
+	public void retryAutoDeletion(Transaction txn, GroupId g)
+			throws DbException {
+		db.setAutoDeleteUnblocked(txn, g);
+		deleteMessages(txn);
+	}
+
+	@Override
 	public void startService() throws ServiceException {
 		try {
-			db.transaction(false, this::deleteMessages);
+			db.transaction(false, this::deleteMessagesAndSheduleNextCheck);
 		} catch (DbException e) {
 			throw new ServiceException(e);
 		}
@@ -131,15 +138,28 @@ class AutoDeleteManagerImpl
 		if (LOG.isLoggable(INFO)) {
 			LOG.info("Scheduling auto-delete task in " + delay + " ms");
 		}
-		return taskScheduler.schedule(this::deleteMessages, dbExecutor,
-				delay, MILLISECONDS);
+		return taskScheduler.schedule(this::deleteMessagesAndSheduleNextCheck,
+				dbExecutor, delay, MILLISECONDS);
 	}
 
-	private void deleteMessages() {
+	private void deleteMessagesAndSheduleNextCheck() {
 		try {
-			db.transaction(false, this::deleteMessages);
+			db.transaction(false, this::deleteMessagesAndSheduleNextCheck);
 		} catch (DbException e) {
 			logException(LOG, WARNING, e);
+		}
+	}
+
+	private void deleteMessagesAndSheduleNextCheck(Transaction txn)
+			throws DbException {
+		deleteMessages(txn);
+		long deadline = db.getNextAutoDeleteDeadline(txn);
+		long now = clock.currentTimeMillis();
+		synchronized (lock) {
+			lastTaskTime = now;
+			nextDeadline = deadline;
+			if (deadline == NO_AUTO_DELETE_DEADLINE) nextCheck = null;
+			else nextCheck = scheduleDeletion(deadline, lastTaskTime, now);
 		}
 	}
 
@@ -171,20 +191,12 @@ class AutoDeleteManagerImpl
 				}
 				messageIds.add(m);
 			} else {
-				// TODO: Do something about this
 				LOG.info("Message was not deleted");
+				db.setAutoDeleteBlocked(txn, m);
 			}
 		}
 		for (Entry<GroupId, Collection<MessageId>> e : deleted.entrySet()) {
 			txn.attach(new MessagesAutoDeletedEvent(e.getKey(), e.getValue()));
-		}
-		long deadline = db.getNextAutoDeleteDeadline(txn);
-		long now = clock.currentTimeMillis();
-		synchronized (lock) {
-			lastTaskTime = now;
-			nextDeadline = deadline;
-			if (deadline == NO_AUTO_DELETE_DEADLINE) nextCheck = null;
-			else nextCheck = scheduleDeletion(deadline, lastTaskTime, now);
 		}
 	}
 }
