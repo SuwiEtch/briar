@@ -692,10 +692,20 @@ interface Database<T> {
 	void resetExpiryTime(T txn, ContactId c, MessageId m) throws DbException;
 
 	/**
+	 * Marks the given message as blocked for auto-deletion.
+	 */
+	void setAutoDeleteBlocked(T txn, MessageId m) throws DbException;
+
+	/**
 	 * Sets the auto-delete timer duration for the given message.
 	 */
 	void setAutoDeleteDuration(T txn, MessageId m, long autoDeleteTimer)
 			throws DbException;
+
+	/**
+	 * Marks all messages in the given group as unblocked for auto-deletion.
+	 */
+	void setAutoDeleteUnblocked(T txn, GroupId g) throws DbException;
 
 	/**
 	 * Marks the given contact as verified.

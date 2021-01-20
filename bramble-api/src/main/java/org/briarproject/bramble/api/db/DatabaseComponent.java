@@ -566,10 +566,20 @@ public interface DatabaseComponent extends TransactionManager {
 			throws DbException;
 
 	/**
+	 * Marks the given message as blocked for auto-deletion.
+	 */
+	void setAutoDeleteBlocked(Transaction txn, MessageId m) throws DbException;
+
+	/**
 	 * Sets the auto-delete timer duration for the given message.
 	 */
 	void setAutoDeleteDuration(Transaction txn, MessageId m,
 			long autoDeleteTimer) throws DbException;
+
+	/**
+	 * Marks all messages in the given group as unblocked for auto-deletion.
+	 */
+	void setAutoDeleteUnblocked(Transaction txn, GroupId g) throws DbException;
 
 	/**
 	 * Marks the given contact as verified.

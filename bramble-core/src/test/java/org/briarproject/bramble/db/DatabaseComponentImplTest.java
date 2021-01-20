@@ -513,11 +513,11 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			throws Exception {
 		context.checking(new Expectations() {{
 			// Check whether the group is in the DB (which it's not)
-			exactly(8).of(database).startTransaction();
+			exactly(9).of(database).startTransaction();
 			will(returnValue(txn));
-			exactly(8).of(database).containsGroup(txn, groupId);
+			exactly(9).of(database).containsGroup(txn, groupId);
 			will(returnValue(false));
-			exactly(8).of(database).abortTransaction(txn);
+			exactly(9).of(database).abortTransaction(txn);
 			// Allow other checks to pass
 			allowing(database).containsContact(txn, contactId);
 			will(returnValue(true));
@@ -584,6 +584,14 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 
 		try {
 			db.transaction(false, transaction ->
+					db.setAutoDeleteUnblocked(transaction, groupId));
+			fail();
+		} catch (NoSuchGroupException expected) {
+			// Expected
+		}
+
+		try {
+			db.transaction(false, transaction ->
 					db.setGroupVisibility(transaction, contactId, groupId,
 							SHARED));
 			fail();
@@ -597,11 +605,11 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 			throws Exception {
 		context.checking(new Expectations() {{
 			// Check whether the message is in the DB (which it's not)
-			exactly(14).of(database).startTransaction();
+			exactly(15).of(database).startTransaction();
 			will(returnValue(txn));
-			exactly(14).of(database).containsMessage(txn, messageId);
+			exactly(15).of(database).containsMessage(txn, messageId);
 			will(returnValue(false));
-			exactly(14).of(database).abortTransaction(txn);
+			exactly(15).of(database).abortTransaction(txn);
 			// Allow other checks to pass
 			allowing(database).containsContact(txn, contactId);
 			will(returnValue(true));
@@ -709,6 +717,14 @@ public class DatabaseComponentImplTest extends BrambleMockTestCase {
 		try {
 			db.transaction(true, transaction ->
 					db.getMessageDependents(transaction, messageId));
+			fail();
+		} catch (NoSuchMessageException expected) {
+			// Expected
+		}
+
+		try {
+			db.transaction(false, transaction ->
+					db.setAutoDeleteBlocked(transaction, messageId));
 			fail();
 		} catch (NoSuchMessageException expected) {
 			// Expected

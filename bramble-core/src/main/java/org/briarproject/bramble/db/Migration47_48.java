@@ -37,6 +37,8 @@ class Migration47_48 implements Migration<Connection> {
 			// timer hasn't started yet
 			s.execute("ALTER TABLE messages"
 					+ " ADD COLUMN autoDeleteDeadline BIGINT");
+			s.execute("ALTER TABLE messages"
+					+ " ADD COLUMN autoDeleteBlocked BOOLEAN DEFAULT FALSE");
 			s.execute("CREATE INDEX IF NOT EXISTS messagesByAutoDeleteDeadline"
 					+ " ON messages (autoDeleteDeadline)");
 		} catch (SQLException e) {

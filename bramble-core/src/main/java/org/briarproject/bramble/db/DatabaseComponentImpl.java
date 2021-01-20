@@ -975,6 +975,16 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 	}
 
 	@Override
+	public void setAutoDeleteBlocked(Transaction transaction, MessageId m)
+			throws DbException {
+		if (transaction.isReadOnly()) throw new IllegalArgumentException();
+		T txn = unbox(transaction);
+		if (!db.containsMessage(txn, m))
+			throw new NoSuchMessageException();
+		db.setAutoDeleteBlocked(txn, m);
+	}
+
+	@Override
 	public void setAutoDeleteDuration(Transaction transaction, MessageId m,
 			long autoDeleteTimer) throws DbException {
 		if (transaction.isReadOnly()) throw new IllegalArgumentException();
@@ -982,6 +992,16 @@ class DatabaseComponentImpl<T> implements DatabaseComponent {
 		if (!db.containsMessage(txn, m))
 			throw new NoSuchMessageException();
 		db.setAutoDeleteDuration(txn, m, autoDeleteTimer);
+	}
+
+	@Override
+	public void setAutoDeleteUnblocked(Transaction transaction, GroupId g)
+			throws DbException {
+		if (transaction.isReadOnly()) throw new IllegalArgumentException();
+		T txn = unbox(transaction);
+		if (!db.containsGroup(txn, g))
+			throw new NoSuchGroupException();
+		db.setAutoDeleteUnblocked(txn, g);
 	}
 
 	@Override

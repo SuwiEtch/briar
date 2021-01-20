@@ -187,6 +187,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 					// Null if no timer duration has been set or the timer
 					// hasn't started
 					+ " autoDeleteDeadline BIGINT,"
+					+ " autoDeleteBlocked BOOLEAN DEFAULT FALSE,"
 					+ " length INT NOT NULL,"
 					+ " raw BLOB," // Null if message has been deleted
 					+ " PRIMARY KEY (messageId),"
@@ -2248,7 +2249,8 @@ abstract class JdbcDatabase implements Database<Connection> {
 		ResultSet rs = null;
 		try {
 			String sql = "SELECT messageId, groupId FROM messages"
-					+ " WHERE autoDeleteDeadline <= ?";
+					+ " WHERE autoDeleteDeadline <= ?"
+					+ " AND autoDeleteBlocked = FALSE";
 			ps = txn.prepareStatement(sql);
 			ps.setLong(1, now);
 			rs = ps.executeQuery();
@@ -2304,6 +2306,7 @@ abstract class JdbcDatabase implements Database<Connection> {
 		try {
 			String sql = "SELECT autoDeleteDeadline FROM messages"
 					+ " WHERE autoDeleteDeadline IS NOT NULL"
+					+ " AND autoDeleteBlocked = FALSE"
 					+ " ORDER BY autoDeleteDeadline LIMIT 1";
 			s = txn.createStatement();
 			rs = s.executeQuery(sql);
@@ -3089,6 +3092,24 @@ abstract class JdbcDatabase implements Database<Connection> {
 	}
 
 	@Override
+	public void setAutoDeleteBlocked(Connection txn, MessageId m)
+			throws DbException {
+		PreparedStatement ps = null;
+		try {
+			String sql = "UPDATE messages SET autoDeleteBlocked = TRUE"
+					+ " WHERE messageId = ?";
+			ps = txn.prepareStatement(sql);
+			ps.setBytes(1, m.getBytes());
+			int affected = ps.executeUpdate();
+			if (affected < 0 || affected > 1) throw new DbStateException();
+			ps.close();
+		} catch (SQLException e) {
+			tryToClose(ps, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
 	public void setAutoDeleteDuration(Connection txn, MessageId m,
 			long autoDeleteTimer) throws DbException {
 		PreparedStatement ps = null;
@@ -3100,6 +3121,24 @@ abstract class JdbcDatabase implements Database<Connection> {
 			ps.setBytes(2, m.getBytes());
 			int affected = ps.executeUpdate();
 			if (affected < 0 || affected > 1) throw new DbStateException();
+			ps.close();
+		} catch (SQLException e) {
+			tryToClose(ps, LOG, WARNING);
+			throw new DbException(e);
+		}
+	}
+
+	@Override
+	public void setAutoDeleteUnblocked(Connection txn, GroupId g)
+			throws DbException {
+		PreparedStatement ps = null;
+		try {
+			String sql = "UPDATE messages SET autoDeleteBlocked = FALSE"
+					+ " WHERE groupId = ?";
+			ps = txn.prepareStatement(sql);
+			ps.setBytes(1, g.getBytes());
+			int affected = ps.executeUpdate();
+			if (affected < 0) throw new DbStateException();
 			ps.close();
 		} catch (SQLException e) {
 			tryToClose(ps, LOG, WARNING);
