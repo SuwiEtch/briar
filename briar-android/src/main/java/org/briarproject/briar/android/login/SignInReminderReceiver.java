@@ -14,7 +14,7 @@ import javax.inject.Inject;
 
 import static android.content.Intent.ACTION_BOOT_COMPLETED;
 import static android.content.Intent.ACTION_MY_PACKAGE_REPLACED;
-import static org.briarproject.briar.android.settings.SettingsFragment.NOTIFY_SIGN_IN;
+import static org.briarproject.briar.android.settings.NotificationsFragment.NOTIFY_SIGN_IN;
 import static org.briarproject.briar.api.android.AndroidNotificationManager.ACTION_DISMISS_REMINDER;
 
 public class SignInReminderReceiver extends BroadcastReceiver {
