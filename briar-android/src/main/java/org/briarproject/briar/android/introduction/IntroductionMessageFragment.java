@@ -2,7 +2,6 @@ package org.briarproject.briar.android.introduction;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,7 +52,6 @@ public class IntroductionMessageFragment extends BaseFragment
 
 	public static IntroductionMessageFragment newInstance(int contactId1,
 			int contactId2) {
-		Log.i("introduction", "newInstance()");
 		Bundle args = new Bundle();
 		args.putInt(CONTACT_ID_1, contactId1);
 		args.putInt(CONTACT_ID_2, contactId2);
