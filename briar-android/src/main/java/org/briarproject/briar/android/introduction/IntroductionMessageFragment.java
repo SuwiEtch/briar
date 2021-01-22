@@ -2,6 +2,7 @@ package org.briarproject.briar.android.introduction;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,8 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.briarproject.bramble.api.contact.Contact;
-import org.briarproject.bramble.api.contact.ContactId;
-import org.briarproject.bramble.api.contact.ContactManager;
 import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
@@ -24,8 +23,6 @@ import org.briarproject.briar.android.view.TextInputView;
 import org.briarproject.briar.android.view.TextSendController;
 import org.briarproject.briar.android.view.TextSendController.SendListener;
 import org.briarproject.briar.api.attachment.AttachmentHeader;
-import org.briarproject.briar.api.identity.AuthorInfo;
-import org.briarproject.briar.api.identity.AuthorManager;
 import org.briarproject.briar.api.introduction.IntroductionManager;
 
 import java.util.List;
@@ -35,6 +32,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.lifecycle.ViewModelProvider;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.app.Activity.RESULT_OK;
@@ -60,20 +58,9 @@ public class IntroductionMessageFragment extends BaseFragment
 	private final static String CONTACT_ID_1 = "contact1";
 	private final static String CONTACT_ID_2 = "contact2";
 
-	private IntroductionActivity introductionActivity;
-	private ViewHolder ui;
-	private Contact contact1, contact2;
-
-	// Fields that are accessed from background threads must be volatile
-	@Inject
-	protected volatile ContactManager contactManager;
-	@Inject
-	protected volatile AuthorManager authorManager;
-	@Inject
-	protected volatile IntroductionManager introductionManager;
-
 	public static IntroductionMessageFragment newInstance(int contactId1,
 			int contactId2) {
+		Log.i("introduction", "newInstance()");
 		Bundle args = new Bundle();
 		args.putInt(CONTACT_ID_1, contactId1);
 		args.putInt(CONTACT_ID_2, contactId2);
@@ -83,6 +70,26 @@ public class IntroductionMessageFragment extends BaseFragment
 		return fragment;
 	}
 
+	@Inject
+	ViewModelProvider.Factory viewModelFactory;
+
+	private IntroductionViewModel viewModel;
+
+	private IntroductionActivity introductionActivity;
+	private ViewHolder ui;
+	private Contact contact1, contact2;
+
+	// Fields that are accessed from background threads must be volatile
+	@Inject
+	protected volatile IntroductionManager introductionManager;
+
+	@Override
+	public void injectFragment(ActivityComponent component) {
+		component.inject(this);
+		viewModel = new ViewModelProvider(this, viewModelFactory)
+				.get(IntroductionViewModel.class);
+	}
+
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
@@ -90,15 +97,9 @@ public class IntroductionMessageFragment extends BaseFragment
 	}
 
 	@Override
-	public void injectFragment(ActivityComponent component) {
-		component.inject(this);
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater,
 			@Nullable ViewGroup container,
 			@Nullable Bundle savedInstanceState) {
-
 		// change toolbar text
 		ActionBar actionBar = introductionActivity.getSupportActionBar();
 		if (actionBar != null) {
@@ -113,6 +114,9 @@ public class IntroductionMessageFragment extends BaseFragment
 			throw new AssertionError("Use newInstance() to instantiate");
 		}
 
+		viewModel.setContactId1(contactId1);
+		viewModel.setContactId2(contactId2);
+
 		// inflate view
 		View v = inflater.inflate(R.layout.introduction_message, container,
 				false);
@@ -123,8 +127,10 @@ public class IntroductionMessageFragment extends BaseFragment
 		ui.message.setMaxTextLength(MAX_INTRODUCTION_TEXT_LENGTH);
 		ui.message.setReady(false);
 
-		// get contacts and then show view
-		prepareToSetUpViews(contactId1, contactId2);
+		viewModel.getData().observe(getViewLifecycleOwner(), data -> {
+			setUpViews(data.getContact1(), data.getContact2(),
+					data.isPossible());
+		});
 
 		return v;
 	}
@@ -132,6 +138,7 @@ public class IntroductionMessageFragment extends BaseFragment
 	@Override
 	public void onStart() {
 		super.onStart();
+		viewModel.loadData();
 	}
 
 	@Override
@@ -139,53 +146,31 @@ public class IntroductionMessageFragment extends BaseFragment
 		return TAG;
 	}
 
-	private void prepareToSetUpViews(int contactId1, int contactId2) {
-		introductionActivity.runOnDbThread(() -> {
-			try {
-				Contact contact1 =
-						contactManager.getContact(new ContactId(contactId1));
-				Contact contact2 =
-						contactManager.getContact(new ContactId(contactId2));
-				AuthorInfo a1 = authorManager.getAuthorInfo(contact1);
-				AuthorInfo a2 = authorManager.getAuthorInfo(contact2);
-				boolean possible =
-						introductionManager.canIntroduce(contact1, contact2);
-				ContactItem c1 = new ContactItem(contact1, a1);
-				ContactItem c2 = new ContactItem(contact2, a2);
-				setUpViews(c1, c2, possible);
-			} catch (DbException e) {
-				logException(LOG, WARNING, e);
-			}
-		});
-	}
-
 	private void setUpViews(ContactItem c1, ContactItem c2, boolean possible) {
-		introductionActivity.runOnUiThreadUnlessDestroyed(() -> {
-			contact1 = c1.getContact();
-			contact2 = c2.getContact();
+		contact1 = c1.getContact();
+		contact2 = c2.getContact();
 
-			// set avatars
-			setAvatar(ui.avatar1, c1);
-			setAvatar(ui.avatar2, c2);
+		// set avatars
+		setAvatar(ui.avatar1, c1);
+		setAvatar(ui.avatar2, c2);
 
-			// set contact names
-			ui.contactName1.setText(getContactDisplayName(c1.getContact()));
-			ui.contactName2.setText(getContactDisplayName(c2.getContact()));
+		// set contact names
+		ui.contactName1.setText(getContactDisplayName(c1.getContact()));
+		ui.contactName2.setText(getContactDisplayName(c2.getContact()));
 
-			// hide progress bar
-			ui.progressBar.setVisibility(GONE);
+		// hide progress bar
+		ui.progressBar.setVisibility(GONE);
 
-			if (possible) {
-				// show views
-				ui.notPossible.setVisibility(GONE);
-				ui.message.setVisibility(VISIBLE);
-				ui.message.setReady(true);
-				ui.message.showSoftKeyboard();
-			} else {
-				ui.notPossible.setVisibility(VISIBLE);
-				ui.message.setVisibility(GONE);
-			}
-		});
+		if (possible) {
+			// show views
+			ui.notPossible.setVisibility(GONE);
+			ui.message.setVisibility(VISIBLE);
+			ui.message.setReady(true);
+			ui.message.showSoftKeyboard();
+		} else {
+			ui.notPossible.setVisibility(VISIBLE);
+			ui.message.setVisibility(GONE);
+		}
 	}
 
 	@Override
