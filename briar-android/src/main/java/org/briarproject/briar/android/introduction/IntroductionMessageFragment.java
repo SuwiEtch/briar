@@ -11,8 +11,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.briarproject.bramble.api.contact.Contact;
-import org.briarproject.bramble.api.db.DbException;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
@@ -23,10 +21,8 @@ import org.briarproject.briar.android.view.TextInputView;
 import org.briarproject.briar.android.view.TextSendController;
 import org.briarproject.briar.android.view.TextSendController.SendListener;
 import org.briarproject.briar.api.attachment.AttachmentHeader;
-import org.briarproject.briar.api.introduction.IntroductionManager;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -39,8 +35,6 @@ import static android.app.Activity.RESULT_OK;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static android.widget.Toast.LENGTH_SHORT;
-import static java.util.logging.Level.WARNING;
-import static org.briarproject.bramble.util.LogUtils.logException;
 import static org.briarproject.briar.android.util.UiUtils.getContactDisplayName;
 import static org.briarproject.briar.android.util.UiUtils.hideSoftKeyboard;
 import static org.briarproject.briar.android.view.AuthorView.setAvatar;
@@ -53,7 +47,6 @@ public class IntroductionMessageFragment extends BaseFragment
 
 	public static final String TAG =
 			IntroductionMessageFragment.class.getName();
-	private static final Logger LOG = Logger.getLogger(TAG);
 
 	private final static String CONTACT_ID_1 = "contact1";
 	private final static String CONTACT_ID_2 = "contact2";
@@ -77,11 +70,6 @@ public class IntroductionMessageFragment extends BaseFragment
 
 	private IntroductionActivity introductionActivity;
 	private ViewHolder ui;
-	private Contact contact1, contact2;
-
-	// Fields that are accessed from background threads must be volatile
-	@Inject
-	protected volatile IntroductionManager introductionManager;
 
 	@Override
 	public void injectFragment(ActivityComponent component) {
@@ -127,10 +115,15 @@ public class IntroductionMessageFragment extends BaseFragment
 		ui.message.setMaxTextLength(MAX_INTRODUCTION_TEXT_LENGTH);
 		ui.message.setReady(false);
 
-		viewModel.getData().observe(getViewLifecycleOwner(), data -> {
-			setUpViews(data.getContact1(), data.getContact2(),
-					data.isPossible());
-		});
+		viewModel.getData().observe(getViewLifecycleOwner(), data ->
+				setUpViews(data.getContact1(), data.getContact2(),
+						data.isPossible())
+		);
+
+		viewModel.getError().observe(getViewLifecycleOwner(), error ->
+				Toast.makeText(introductionActivity,
+						R.string.introduction_error, LENGTH_SHORT).show()
+		);
 
 		return v;
 	}
@@ -147,9 +140,6 @@ public class IntroductionMessageFragment extends BaseFragment
 	}
 
 	private void setUpViews(ContactItem c1, ContactItem c2, boolean possible) {
-		contact1 = c1.getContact();
-		contact2 = c2.getContact();
-
 		// set avatars
 		setAvatar(ui.avatar1, c1);
 		setAvatar(ui.avatar2, c2);
@@ -191,7 +181,7 @@ public class IntroductionMessageFragment extends BaseFragment
 		// disable button to prevent accidental double invitations
 		ui.message.setReady(false);
 
-		makeIntroduction(contact1, contact2, text);
+		makeIntroduction(text);
 
 		// don't wait for the introduction to be made before finishing activity
 		hideSoftKeyboard(ui.message);
@@ -199,24 +189,8 @@ public class IntroductionMessageFragment extends BaseFragment
 		introductionActivity.supportFinishAfterTransition();
 	}
 
-	private void makeIntroduction(Contact c1, Contact c2,
-			@Nullable String text) {
-		introductionActivity.runOnDbThread(() -> {
-			// actually make the introduction
-			try {
-				long timestamp = System.currentTimeMillis();
-				introductionManager.makeIntroduction(c1, c2, text, timestamp);
-			} catch (DbException e) {
-				logException(LOG, WARNING, e);
-				introductionError();
-			}
-		});
-	}
-
-	private void introductionError() {
-		introductionActivity.runOnUiThreadUnlessDestroyed(
-				() -> Toast.makeText(introductionActivity,
-						R.string.introduction_error, LENGTH_SHORT).show());
+	private void makeIntroduction(@Nullable String text) {
+		viewModel.makeIntroduction(text);
 	}
 
 	private static class ViewHolder {

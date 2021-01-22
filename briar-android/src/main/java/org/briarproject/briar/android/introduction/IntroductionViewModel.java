@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -40,9 +41,14 @@ public class IntroductionViewModel extends DbViewModel {
 	private final IntroductionManager introductionManager;
 
 	private final MutableLiveData<Data> data = new MutableLiveData<>();
+	private final MutableLiveData<Boolean> error = new MutableLiveData<>();
 
 	LiveData<Data> getData() {
 		return data;
+	}
+
+	LiveData<Boolean> getError() {
+		return error;
 	}
 
 	static class Data {
@@ -109,6 +115,23 @@ public class IntroductionViewModel extends DbViewModel {
 				data.postValue(new Data(c1, c2, possible));
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
+			}
+		});
+	}
+
+
+	public void makeIntroduction(@Nullable String text) {
+		runOnDbThread(() -> {
+			// actually make the introduction
+			try {
+				long timestamp = System.currentTimeMillis();
+				Data data = this.data.getValue();
+				introductionManager.makeIntroduction(
+						data.getContact1().getContact(),
+						data.getContact2().getContact(), text, timestamp);
+			} catch (DbException e) {
+				logException(LOG, WARNING, e);
+				error.postValue(true);
 			}
 		});
 	}
