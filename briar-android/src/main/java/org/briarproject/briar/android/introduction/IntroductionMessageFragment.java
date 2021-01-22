@@ -181,16 +181,12 @@ public class IntroductionMessageFragment extends BaseFragment
 		// disable button to prevent accidental double invitations
 		ui.message.setReady(false);
 
-		makeIntroduction(text);
+		viewModel.makeIntroduction(text);
 
 		// don't wait for the introduction to be made before finishing activity
 		hideSoftKeyboard(ui.message);
 		introductionActivity.setResult(RESULT_OK);
 		introductionActivity.supportFinishAfterTransition();
-	}
-
-	private void makeIntroduction(@Nullable String text) {
-		viewModel.makeIntroduction(text);
 	}
 
 	private static class ViewHolder {
