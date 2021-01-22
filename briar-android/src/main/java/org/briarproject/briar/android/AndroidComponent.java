@@ -35,6 +35,7 @@ import org.briarproject.briar.android.attachment.AttachmentModule;
 import org.briarproject.briar.android.attachment.media.MediaModule;
 import org.briarproject.briar.android.conversation.glide.BriarModelLoader;
 import org.briarproject.briar.android.login.SignInReminderReceiver;
+import org.briarproject.briar.android.settings.ConnectionsFragment;
 import org.briarproject.briar.android.view.EmojiTextInputView;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
 import org.briarproject.briar.api.android.DozeWatchdog;
@@ -188,4 +189,6 @@ public interface AndroidComponent
 	void inject(EmojiTextInputView textInputView);
 
 	void inject(BriarModelLoader briarModelLoader);
+
+	void inject(ConnectionsFragment connectionsFragment);
 }

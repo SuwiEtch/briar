@@ -1,6 +1,7 @@
 package org.briarproject.briar.android;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.StrictMode;
 
@@ -35,9 +36,9 @@ import org.briarproject.briar.android.forum.ForumModule;
 import org.briarproject.briar.android.keyagreement.ContactExchangeModule;
 import org.briarproject.briar.android.login.LoginModule;
 import org.briarproject.briar.android.navdrawer.NavDrawerModule;
-import org.briarproject.briar.android.settings.SettingsModule;
 import org.briarproject.briar.android.privategroup.list.GroupListModule;
 import org.briarproject.briar.android.reporting.DevReportModule;
+import org.briarproject.briar.android.settings.SettingsModule;
 import org.briarproject.briar.android.test.TestAvatarCreatorImpl;
 import org.briarproject.briar.android.viewmodel.ViewModelModule;
 import org.briarproject.briar.api.android.AndroidNotificationManager;
@@ -103,6 +104,11 @@ public class AppModule {
 
 	public AppModule(Application application) {
 		this.application = application;
+	}
+
+	public static AndroidComponent getAndroidComponent(Context ctx) {
+		BriarApplication app = (BriarApplication) ctx.getApplicationContext();
+		return app.getApplicationComponent();
 	}
 
 	@Provides

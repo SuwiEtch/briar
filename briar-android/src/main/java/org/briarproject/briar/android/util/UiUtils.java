@@ -32,6 +32,8 @@ import org.briarproject.bramble.api.identity.Author;
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
+import org.briarproject.briar.android.AndroidComponent;
+import org.briarproject.briar.android.BriarApplication;
 import org.briarproject.briar.android.reporting.FeedbackActivity;
 import org.briarproject.briar.android.view.ArticleMovementMethod;
 import org.briarproject.briar.android.widget.LinkDialogFragment;
