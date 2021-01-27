@@ -40,39 +40,16 @@ class IntroductionViewModel extends DbViewModel {
 	private final AuthorManager authorManager;
 	private final IntroductionManager introductionManager;
 
-	private final MutableLiveData<Data> data = new MutableLiveData<>();
+	private final MutableLiveData<IntroductionInfo> introductionInfo =
+			new MutableLiveData<>();
 	private final MutableLiveData<Boolean> error = new MutableLiveData<>();
 
-	LiveData<Data> getData() {
-		return data;
+	LiveData<IntroductionInfo> getIntroductionInfo() {
+		return introductionInfo;
 	}
 
 	LiveData<Boolean> getError() {
 		return error;
-	}
-
-	static class Data {
-		ContactItem c1;
-		ContactItem c2;
-		boolean possible;
-
-		public Data(ContactItem c1, ContactItem c2, boolean possible) {
-			this.c1 = c1;
-			this.c2 = c2;
-			this.possible = possible;
-		}
-
-		public ContactItem getContact1() {
-			return c1;
-		}
-
-		public ContactItem getContact2() {
-			return c2;
-		}
-
-		public boolean isPossible() {
-			return possible;
-		}
 	}
 
 	@Inject
@@ -110,20 +87,20 @@ class IntroductionViewModel extends DbViewModel {
 						introductionManager.canIntroduce(contact1, contact2);
 				ContactItem c1 = new ContactItem(contact1, a1);
 				ContactItem c2 = new ContactItem(contact2, a2);
-				data.postValue(new Data(c1, c2, possible));
+				introductionInfo.postValue(
+						new IntroductionInfo(c1, c2, possible));
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
 			}
 		});
 	}
 
-
 	void makeIntroduction(@Nullable String text) {
 		runOnDbThread(() -> {
 			// actually make the introduction
 			try {
 				long timestamp = System.currentTimeMillis();
-				Data data = this.data.getValue();
+				IntroductionInfo data = this.introductionInfo.getValue();
 				introductionManager.makeIntroduction(
 						data.getContact1().getContact(),
 						data.getContact2().getContact(), text, timestamp);

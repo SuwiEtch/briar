@@ -112,7 +112,7 @@ public class IntroductionMessageFragment extends BaseFragment
 		ui.message.setMaxTextLength(MAX_INTRODUCTION_TEXT_LENGTH);
 		ui.message.setReady(false);
 
-		viewModel.getData().observe(getViewLifecycleOwner(), data ->
+		viewModel.getIntroductionInfo().observe(getViewLifecycleOwner(), data ->
 				setUpViews(data.getContact1(), data.getContact2(),
 						data.isPossible())
 		);
