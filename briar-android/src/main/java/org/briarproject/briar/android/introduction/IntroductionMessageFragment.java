@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
@@ -33,7 +32,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static android.app.Activity.RESULT_OK;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static android.widget.Toast.LENGTH_SHORT;
 import static org.briarproject.briar.android.util.UiUtils.getContactDisplayName;
 import static org.briarproject.briar.android.util.UiUtils.hideSoftKeyboard;
 import static org.briarproject.briar.android.view.AuthorView.setAvatar;
@@ -115,11 +113,6 @@ public class IntroductionMessageFragment extends BaseFragment
 		viewModel.getIntroductionInfo().observe(getViewLifecycleOwner(), data ->
 				setUpViews(data.getContact1(), data.getContact2(),
 						data.isPossible())
-		);
-
-		viewModel.getError().observe(getViewLifecycleOwner(), error ->
-				Toast.makeText(introductionActivity,
-						R.string.introduction_error, LENGTH_SHORT).show()
 		);
 
 		return v;

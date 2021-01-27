@@ -1,6 +1,7 @@
 package org.briarproject.briar.android.introduction;
 
 import android.app.Application;
+import android.widget.Toast;
 
 import org.briarproject.bramble.api.contact.Contact;
 import org.briarproject.bramble.api.contact.ContactId;
@@ -11,6 +12,7 @@ import org.briarproject.bramble.api.db.TransactionManager;
 import org.briarproject.bramble.api.lifecycle.LifecycleManager;
 import org.briarproject.bramble.api.nullsafety.NotNullByDefault;
 import org.briarproject.bramble.api.system.AndroidExecutor;
+import org.briarproject.briar.R;
 import org.briarproject.briar.android.contact.ContactItem;
 import org.briarproject.briar.android.viewmodel.DbViewModel;
 import org.briarproject.briar.api.identity.AuthorInfo;
@@ -26,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import static android.widget.Toast.LENGTH_SHORT;
 import static java.util.logging.Level.WARNING;
 import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.util.LogUtils.logException;
@@ -42,14 +45,9 @@ class IntroductionViewModel extends DbViewModel {
 
 	private final MutableLiveData<IntroductionInfo> introductionInfo =
 			new MutableLiveData<>();
-	private final MutableLiveData<Boolean> error = new MutableLiveData<>();
 
 	LiveData<IntroductionInfo> getIntroductionInfo() {
 		return introductionInfo;
-	}
-
-	LiveData<Boolean> getError() {
-		return error;
 	}
 
 	@Inject
@@ -106,7 +104,9 @@ class IntroductionViewModel extends DbViewModel {
 						data.getContact2().getContact(), text, timestamp);
 			} catch (DbException e) {
 				logException(LOG, WARNING, e);
-				error.postValue(true);
+				androidExecutor.runOnUiThread(() -> Toast.makeText(
+						getApplication(), R.string.introduction_error,
+						LENGTH_SHORT).show());
 			}
 		});
 	}
