@@ -100,8 +100,7 @@ public class IntroductionMessageFragment extends BaseFragment
 			throw new AssertionError("Use newInstance() to instantiate");
 		}
 
-		viewModel.setContactId1(contactId1);
-		viewModel.setContactId2(contactId2);
+		viewModel.setContactIds(contactId1, contactId2);
 
 		// inflate view
 		View v = inflater.inflate(R.layout.introduction_message, container,
@@ -124,12 +123,6 @@ public class IntroductionMessageFragment extends BaseFragment
 		);
 
 		return v;
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-		viewModel.loadData();
 	}
 
 	@Override
