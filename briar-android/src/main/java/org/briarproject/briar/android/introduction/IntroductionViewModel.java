@@ -31,7 +31,7 @@ import static java.util.logging.Logger.getLogger;
 import static org.briarproject.bramble.util.LogUtils.logException;
 
 @NotNullByDefault
-public class IntroductionViewModel extends DbViewModel {
+class IntroductionViewModel extends DbViewModel {
 
 	private static final Logger LOG =
 			getLogger(IntroductionViewModel.class.getName());
@@ -91,13 +91,13 @@ public class IntroductionViewModel extends DbViewModel {
 	private int contactId1;
 	private int contactId2;
 
-	public void setContactIds(int contactId1, int contactId2) {
+	void setContactIds(int contactId1, int contactId2) {
 		this.contactId1 = contactId1;
 		this.contactId2 = contactId2;
 		loadData();
 	}
 
-	public void loadData() {
+	private void loadData() {
 		runOnDbThread(() -> {
 			try {
 				Contact contact1 =
@@ -118,7 +118,7 @@ public class IntroductionViewModel extends DbViewModel {
 	}
 
 
-	public void makeIntroduction(@Nullable String text) {
+	void makeIntroduction(@Nullable String text) {
 		runOnDbThread(() -> {
 			// actually make the introduction
 			try {
