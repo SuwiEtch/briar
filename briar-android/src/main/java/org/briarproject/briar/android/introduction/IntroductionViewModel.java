@@ -69,10 +69,10 @@ class IntroductionViewModel extends DbViewModel {
 	void setContactIds(int contactId1, int contactId2) {
 		this.contactId1 = contactId1;
 		this.contactId2 = contactId2;
-		loadData();
+		loadIntroductionInfo();
 	}
 
-	private void loadData() {
+	private void loadIntroductionInfo() {
 		runOnDbThread(() -> {
 			try {
 				Contact contact1 =
