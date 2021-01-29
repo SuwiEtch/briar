@@ -1,6 +1,8 @@
 package org.briarproject.briar.headless.contact
 
 import io.javalin.http.BadRequestResponse
+import io.javalin.http.ForbiddenResponse
+import io.javalin.http.HttpResponseException
 import io.javalin.http.NotFoundResponse
 import io.javalin.plugin.json.JavalinJson.toJson
 import io.mockk.Runs
@@ -18,8 +20,10 @@ import org.briarproject.bramble.api.contact.event.ContactAddedEvent
 import org.briarproject.bramble.api.contact.event.PendingContactAddedEvent
 import org.briarproject.bramble.api.contact.event.PendingContactRemovedEvent
 import org.briarproject.bramble.api.contact.event.PendingContactStateChangedEvent
+import org.briarproject.bramble.api.db.ContactExistsException
 import org.briarproject.bramble.api.db.NoSuchContactException
 import org.briarproject.bramble.api.db.NoSuchPendingContactException
+import org.briarproject.bramble.api.db.PendingContactExistsException
 import org.briarproject.bramble.api.identity.AuthorConstants.MAX_AUTHOR_NAME_LENGTH
 import org.briarproject.bramble.api.plugin.event.ContactConnectedEvent
 import org.briarproject.bramble.api.plugin.event.ContactDisconnectedEvent
@@ -30,9 +34,11 @@ import org.briarproject.bramble.util.StringUtils.getRandomString
 import org.briarproject.briar.headless.ControllerTest
 import org.briarproject.briar.headless.getFromJson
 import org.briarproject.briar.headless.json.JsonDict
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.security.GeneralSecurityException
 import kotlin.random.Random
 
 internal class ContactControllerTest : ControllerTest() {
@@ -137,6 +143,57 @@ internal class ContactControllerTest : ControllerTest() {
         assertThrows(BadRequestResponse::class.java) {
             controller.addPendingContact(ctx)
         }
+    }
+
+    @Test
+    fun testAddPendingContactPublicKeyInvalid() {
+        val link = "briar://adnsyffpsenoc3yzlhr24aegfq2pwan7kkselocill2choov6sbhs"
+        val alias = "Alias123"
+        val body = """{
+            "link": "$link",
+            "alias": "$alias"
+        }"""
+        every { ctx.body() } returns body
+        every { contactManager.addPendingContact(link, alias) } throws GeneralSecurityException()
+        val exception = assertThrows(HttpResponseException::class.java) {
+            controller.addPendingContact(ctx)
+        }
+        assertEquals("Pending contact's handshake public key is invalid", exception.message)
+        assertEquals(mapOf("error" to "INVALID_PUBLIC_KEY"), exception.details)
+    }
+
+    @Test
+    fun testAddPendingContactSameContactKey() {
+        val link = "briar://adnsyffpsenoc3yzlhr24aegfq2pwan7kkselocill2choov6sbhs"
+        val alias = "Alias123"
+        val body = """{
+            "link": "$link",
+            "alias": "$alias"
+        }"""
+        every { ctx.body() } returns body
+        every { contactManager.addPendingContact(link, alias) } throws ContactExistsException(null, null)
+        val exception = assertThrows(HttpResponseException::class.java) {
+            controller.addPendingContact(ctx)
+        }
+        assertEquals("A contact with the same handshake public key already exists", exception.message)
+        assertEquals(mapOf("error" to "CONTACT_EXISTS"), exception.details)
+    }
+
+    @Test
+    fun testAddPendingContactSamePendingContactKey() {
+        val link = "briar://adnsyffpsenoc3yzlhr24aegfq2pwan7kkselocill2choov6sbhs"
+        val alias = "Alias123"
+        val body = """{
+            "link": "$link",
+            "alias": "$alias"
+        }"""
+        every { ctx.body() } returns body
+        every { contactManager.addPendingContact(link, alias) } throws PendingContactExistsException(null)
+        val exception = assertThrows(HttpResponseException::class.java) {
+            controller.addPendingContact(ctx)
+        }
+        assertEquals("A pending contact with the same handshake public key already exists", exception.message)
+        assertEquals(mapOf("error" to "PENDING_EXISTS"), exception.details)
     }
 
     @Test

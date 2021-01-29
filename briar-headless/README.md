@@ -105,7 +105,40 @@ The link and the alias should be posted as a JSON object:
 }
 ```
 
-This starts the process of adding the contact.
+Possible errors when adding a pending contact are:
+
+#### 400: Pending contact's handshake public key is invalid
+```json
+{
+    "error": "INVALID_PUBLIC_KEY"
+}
+```
+
+#### 403: A contact with the same handshake public key already exists
+
+The Android client
+[shows the following message](https://code.briarproject.org/briar/briar/-/blob/beta-1.2.14/briar-android/src/main/res/values/strings.xml)
+when this happens:
+> Alice and Bob sent you the same link.
+>
+> One of them may be trying to discover who your contacts are.
+>
+> Don't tell them you received the same link from someone else.
+```json
+{
+    "error": "CONTACT_EXISTS"
+}
+```
+
+#### 403: A pending contact with the same handshake public key already exists
+```json
+{
+    "error": "PENDING_EXISTS"
+}
+```
+-----------
+
+Adding a pending contact starts the process of adding the contact.
 Until it is completed, a pending contact is returned as JSON:
 
 ```json
