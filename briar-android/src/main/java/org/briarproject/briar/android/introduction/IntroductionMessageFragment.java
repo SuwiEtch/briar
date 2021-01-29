@@ -1,6 +1,5 @@
 package org.briarproject.briar.android.introduction;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -13,6 +12,7 @@ import org.briarproject.bramble.api.nullsafety.MethodsNotNullByDefault;
 import org.briarproject.bramble.api.nullsafety.ParametersNotNullByDefault;
 import org.briarproject.briar.R;
 import org.briarproject.briar.android.activity.ActivityComponent;
+import org.briarproject.briar.android.activity.BriarActivity;
 import org.briarproject.briar.android.contact.ContactItem;
 import org.briarproject.briar.android.fragment.BaseFragment;
 import org.briarproject.briar.android.view.TextInputView;
@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -64,7 +65,6 @@ public class IntroductionMessageFragment extends BaseFragment
 
 	private IntroductionViewModel viewModel;
 
-	private IntroductionActivity introductionActivity;
 	private ViewHolder ui;
 
 	@Override
@@ -75,17 +75,13 @@ public class IntroductionMessageFragment extends BaseFragment
 	}
 
 	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		introductionActivity = (IntroductionActivity) context;
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater,
 			@Nullable ViewGroup container,
 			@Nullable Bundle savedInstanceState) {
 		// change toolbar text
-		ActionBar actionBar = introductionActivity.getSupportActionBar();
+
+		ActionBar actionBar =
+				((BriarActivity) requireActivity()).getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setTitle(R.string.introduction_message_title);
 		}
@@ -152,7 +148,7 @@ public class IntroductionMessageFragment extends BaseFragment
 		switch (item.getItemId()) {
 			case android.R.id.home:
 				hideSoftKeyboard(ui.message);
-				introductionActivity.onBackPressed();
+				requireActivity().onBackPressed();
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -169,8 +165,9 @@ public class IntroductionMessageFragment extends BaseFragment
 
 		// don't wait for the introduction to be made before finishing activity
 		hideSoftKeyboard(ui.message);
-		introductionActivity.setResult(RESULT_OK);
-		introductionActivity.supportFinishAfterTransition();
+		FragmentActivity activity = requireActivity();
+		activity.setResult(RESULT_OK);
+		activity.supportFinishAfterTransition();
 	}
 
 	private static class ViewHolder {
